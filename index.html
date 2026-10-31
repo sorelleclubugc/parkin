@@ -304,7 +304,7 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 
 <script>
 /* ===== CONFIGURAÇÃO DO SUPABASE: cole aqui os dois valores (Project Settings > API) ===== */
-const SUPABASE_URL='https://zwsaqqfgbthftflhpxzr.supabase.co/rest/v1/';
+const SUPABASE_URL='https://zwsaqqfgbthftflhpxzr.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3c2FxcWZnYnRoZnRmbGhweHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MTEyMjQsImV4cCI6MjEwODk4NzIyNH0.g8xDyq00C-52eJ7YxoIVwgN6HmHWX8VPXTN2rj4gKgY';
 /* ======================================================================================== */
 const CONFIGURED=!SUPABASE_URL.includes('COLE_AQUI')&&!!window.supabase;
@@ -649,7 +649,7 @@ document.addEventListener('input',e=>{
 let U=null,PROF=null,syncT=null,signAvatar='';
 const slug=v=>(v||'').trim().toLowerCase();
 const aErr=(m,ok)=>{const e=$('#aErr');e.textContent=m||'';e.style.color=ok?'var(--at)':'var(--danger)'};
-const friendly=m=>/already|registered/i.test(m)?'Este e-mail já está cadastrado.':/password/i.test(m)?'A senha precisa ter ao menos 6 caracteres.':/rate|limit/i.test(m)?'Muitas tentativas. Aguarde um pouco.':'Não foi possível concluir. Tente de novo.';
+const friendly=m=>(console.error(m),0)||/already|registered/i.test(m)?'Este e-mail já está cadastrado.':/password/i.test(m)?'A senha precisa ter ao menos 6 caracteres.':/rate|limit/i.test(m)?'Muitas tentativas. Aguarde um pouco.':'Não foi possível concluir: '+m;
 function showAuth(m){$('.shell').hidden=true;$('#auth').hidden=false;if(m)aErr(m)}
 function setMode(m){$('#fLogin').hidden=m!=='login';$('#fSign').hidden=m!=='sign';$('#mLogin').setAttribute('aria-pressed',m==='login');$('#mSign').setAttribute('aria-pressed',m==='sign');aErr('')}
 $('#mLogin').onclick=()=>setMode('login');$('#mSign').onclick=()=>setMode('sign');
