@@ -41,7 +41,7 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stro
 .scrim{display:none;position:fixed;inset:0;background:rgba(10,14,24,.45);z-index:25}
 .quote{text-align:center;max-width:780px;margin:6px auto 0;padding:6px 24px 18px;font-size:clamp(17px,2.3vw,24px);font-weight:600;letter-spacing:-.02em;line-height:1.3}
 .quote cite{display:block;font-size:13px;font-weight:400;font-style:normal;color:var(--muted);margin-top:8px;letter-spacing:0}
-.app{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:1100px;margin:0 auto;padding:4px 20px 16px}
+.app{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:1760px;margin:0 auto;padding:4px 28px 20px}
 .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
 .ct{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
@@ -77,7 +77,7 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;margin:0 0 8px;text-tran
 .sub{color:var(--muted);margin:0 0 12px}
 .panel{flex:1;min-height:0;overflow:auto}
 #p-plano{display:flex;flex-direction:column;overflow:auto}
-.cal{flex:none;height:min(720px,72vh);background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:auto}
+.cal{flex:none;height:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:auto}
 /* tarefas */
 .ck{flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);background:none;padding:0;position:relative}
 .ck.on{background:var(--accent);border-color:var(--accent)}
@@ -222,6 +222,8 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .hc.on{background:var(--accent)}.hc.fut{opacity:.35}
 .hcs.w .hc{width:30px;height:30px;border-radius:8px}
 .lt .bkd{width:140px;margin:0;padding:6px 8px}
+.cal.wk{height:min(760px,76vh)}
+.m-grid{grid-template-rows:repeat(6,minmax(104px,1fr))}
 @media (max-width:800px){.side{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);padding-top:calc(20px + env(safe-area-inset-top,0px))}.side.open{transform:none;box-shadow:8px 0 30px rgba(0,0,0,.35)}.burger{display:grid}.scrim.show{display:block}.grid2{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -667,6 +669,7 @@ function renderPlano(){
     h=`<div class="w"><div class="w-top">${hd}</div>${un}</div></div>${bd}</div></div>`;
   }
   $('#cal').innerHTML=h;
+  $('#cal').classList.toggle('wk',pView==='week');
   if(pView==='week')$('#cal').scrollTop=7*48;
   renderBacklog();
 }
