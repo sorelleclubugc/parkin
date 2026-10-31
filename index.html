@@ -77,7 +77,7 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;margin:0 0 8px;text-tran
 .sub{color:var(--muted);margin:0 0 12px}
 .panel{flex:1;min-height:0;overflow:auto}
 #p-plano{display:flex;flex-direction:column;overflow:auto}
-.cal{flex:none;height:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:auto}
+.cal{flex:none;height:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 /* tarefas */
 .ck{flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);background:none;padding:0;position:relative}
 .ck.on{background:var(--accent);border-color:var(--accent)}
@@ -226,8 +226,22 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .bkg .card{margin-bottom:0!important}
 .bkrow{cursor:grab}
 .dropt{outline:2px dashed var(--accent);outline-offset:-2px;background:color-mix(in srgb,var(--accent) 10%,transparent)}
-.cal.wk{height:min(760px,76vh)}
-.m-grid{grid-template-rows:repeat(6,minmax(104px,1fr))}
+.cal.wk{height:auto}
+.m-grid{grid-template-rows:repeat(6,clamp(78px,calc((100vh - 225px)/6),150px));min-height:0}
+.day{overflow:hidden;padding:4px 6px;gap:2px}
+.day .chip{padding:1px 5px;font-size:11.5px}
+.tool h1.pt1{margin:0;font-size:22px;flex:1;min-width:140px}
+.wk7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));min-height:calc(100vh - 225px)}
+.wd{border-left:1px solid var(--line);padding:8px 6px;display:flex;flex-direction:column;gap:6px;cursor:pointer;align-content:start}
+.wd:first-child{border-left:0}
+.wd.today{background:var(--today)}
+.wh{text-align:center;color:var(--muted);font-weight:600;font-size:13px;margin-bottom:4px}
+.wh span{display:grid;place-items:center;width:32px;height:32px;margin:2px auto 0;border-radius:50%;font-size:17px;color:var(--ink)}
+.wd.today .wh span{background:var(--accent);color:var(--accent-ink)}
+.wc{padding:6px 7px;font-size:13px;align-items:flex-start}
+.wc .nm{white-space:normal}
+.wc small{display:block;color:var(--muted);font-size:11px}
+@media (max-width:800px){.wk7{grid-template-columns:1fr;min-height:0}.wd{border-left:0;border-top:1px solid var(--line)}.wh{text-align:left}.wh span{display:inline-grid;margin:0 0 0 8px}}
 .dg{cursor:grab;color:var(--muted);margin-right:6px;user-select:none;font-weight:400}
 .tw tr.dragging{opacity:.4}
 .tw tr.over td{box-shadow:inset 0 2px 0 var(--accent)}
@@ -275,14 +289,13 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
   <section id="p-plano" hidden>
     <div class="tool">
       <div class="seg"><button data-pv="month" aria-pressed="true">Mês</button><button data-pv="week" aria-pressed="false">Semana</button></div>
-      <span class="sp"></span>
+      <h1 id="pTitle" class="pt1"></h1>
       <button class="btn icon" data-nav="-1" aria-label="Anterior">‹</button>
       <button class="btn" data-nav="0">Hoje</button>
       <button class="btn icon" data-nav="1" aria-label="Próximo">›</button>
       <button class="btn primary" id="add">Nova tarefa</button>
     </div>
-    <h1 id="pTitle"></h1>
-    <div class="cal" id="cal"></div>
+        <div class="cal" id="cal"></div>
     <div id="backlog"></div>
   </section>
 
@@ -644,7 +657,6 @@ document.addEventListener('drop',e=>{
   if(!dragT)return;const c=dropCell(e);if(!c)return;
   e.preventDefault();const t=byId(dragT);dragT=null;if(!t)return;
   t.date=c.dataset.date||c.dataset.dd;
-  if(c.classList.contains('col')){const y=e.clientY-c.getBoundingClientRect().top;t.time=pad(Math.min(Math.max(Math.floor(y/48),0),23))+':00'}
   save();render();
 });
 document.addEventListener('dragend',()=>{dragT=null;$$('.dropt').forEach(x=>x.classList.remove('dropt'))});
@@ -710,27 +722,16 @@ function renderPlano(){
   }else{
     const ws=wk(pCur),we=addD(ws,6),f=(d,o)=>d.toLocaleDateString('pt-BR',o);
     $('#pTitle').textContent=ws.getMonth()===we.getMonth()?`${ws.getDate()} – ${we.getDate()} ${f(we,{month:'long',year:'numeric'})}`:`${ws.getDate()} ${f(ws,{month:'short'})} – ${we.getDate()} ${f(we,{month:'short',year:'numeric'})}`;
-    let hd='<div class="w-head"><div></div>',un='<div class="w-un"><div></div>',bd='<div class="w-body"><div class="gutter">';
-    for(let i=1;i<24;i++)bd+=`<i style="top:${i*48}px">${pad(i)}:00</i>`;
-    bd+='</div>';
-    const now=new Date();
+    let cols='';
     for(let i=0;i<7;i++){
-      const d=addD(ws,i),k=iso(d),L=tasksOn(k),tm=L.filter(t=>t.time);
-      hd+=`<div class="${k===k0?'today':''}">${DOW[d.getDay()]}<span>${d.getDate()}</span></div>`;
-      un+=`<div data-dd="${k}">`+L.filter(t=>!t.time).map(t=>`<div class="chip${t.done?' done':''}" style="--c:${cat(t.cat).color}">${ckBtn(t)}<button class="nm" data-id="${t.id}">${esc(t.name)}</button></div>`).join('')+'</div>';
-      bd+=`<div class="col${k===k0?' today':''}" data-date="${k}">`;
-      const lanes=[],out=[];
-      tm.forEach(t=>{const s=mins(t.time),e=s+t.dur;let l=lanes.findIndex(x=>x<=s);if(l<0){l=lanes.length;lanes.push(0)}lanes[l]=e;out.push({t,l,s,e})});
-      out.forEach(({t,l,s,e})=>{const w=100/lanes.length;
-        bd+=`<div class="ev${t.done?' done':''}" style="--c:${cat(t.cat).color};top:${s*.8}px;height:${Math.max((e-s)*.8,22)-2}px;left:calc(${l*w}% + 2px);width:calc(${w}% - 4px)">${ckBtn(t)}<button class="nm" data-id="${t.id}">${esc(t.name)}<small>${t.time} · ${fmt(t.dur*60)}</small></button></div>`});
-      if(k===k0)bd+=`<div class="now" style="top:${(now.getHours()*60+now.getMinutes())*.8}px"></div>`;
-      bd+='</div>';
+      const d=addD(ws,i),k=iso(d),L=tasksOn(k);
+      cols+=`<div class="wd${k===k0?' today':''}" data-dd="${k}"><div class="wh">${DOW[d.getDay()]}<span>${d.getDate()}</span></div>`
+        +L.map(t=>`<div class="chip wc${t.done?' done':''}" style="--c:${cat(t.cat).color}">${ckBtn(t)}<button class="nm" data-id="${t.id}">${t.time?`<b>${t.time}</b> `:''}${esc(t.name)}<small>${fmt(t.dur*60)}</small></button></div>`).join('')+'</div>';
     }
-    h=`<div class="w"><div class="w-top">${hd}</div>${un}</div></div>${bd}</div></div>`;
+    h=`<div class="wk7">${cols}</div>`;
   }
   $('#cal').innerHTML=h;
   $('#cal').classList.toggle('wk',pView==='week');
-  if(pView==='week')$('#cal').scrollTop=7*48;
   renderBacklog();
 }
 
@@ -901,6 +902,7 @@ document.addEventListener('click',e=>{
   }
   if(x=q('[data-ck]'))return toggle(byId(x.dataset.ck));
   if(x=q('[data-id]'))return openTimer(x.dataset.id);
+  if(x=q('[data-dd]'))return openTask(null,x.dataset.dd);
   if(x=q('.col')){const y=e.clientY-x.getBoundingClientRect().top;return openTask(null,x.dataset.date,pad(Math.min(Math.floor(y/48),23))+':00')}
   if(x=q('.day'))return openTask(null,x.dataset.date);
 });
