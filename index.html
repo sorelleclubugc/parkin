@@ -35,8 +35,7 @@ button{cursor:pointer}
 .foot:hover,.nav button:hover{color:var(--ink)}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .content{flex:1;min-width:0;display:flex;flex-direction:column}
-.hd{position:sticky;top:0;z-index:15;background:var(--bg)}
-.bar-top{display:flex;align-items:center;padding:8px 20px 0}
+.bar-top{display:flex;align-items:center;padding:8px 20px 4px;position:sticky;top:0;z-index:15;background:var(--bg)}
 .logo-btn{margin-right:auto;border:0;background:none;padding:4px;display:flex;align-items:center;border-radius:10px}
 .logo-btn img{height:34px;width:auto}
 .avatar{width:36px;height:36px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;margin-left:auto}
@@ -196,6 +195,11 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw th{text-align:left;font-size:12px;color:var(--muted);padding:10px 8px;font-weight:600}
 .tw td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
 .tw td input,.tw td select,.tw td textarea{margin:0}
+.tw tr[data-vo]{cursor:pointer}
+.tw tr[data-vo]:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
+.stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
+.muted{color:var(--muted)}
 .tw .vid{font-weight:700;color:var(--muted);padding-top:15px;width:80px;cursor:pointer;text-decoration:underline dotted}
 .tw th:nth-child(2),.tw td:nth-child(2){width:42%}
 #auth{min-height:100%;display:grid;place-items:center;padding:24px}
@@ -282,8 +286,8 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 </aside>
 <div class="scrim" id="scrim"></div>
 <div class="content">
-<div class="hd"><div class="bar-top"><button class="logo-btn" id="burger" aria-label="Abrir menu"><img class="lg-l" alt=""><img class="lg-d" alt=""></button><button class="tab avatar" data-tab="perfil" id="avatar" aria-label="Perfil">P</button></div>
-<p class="quote">“O trabalho se expande de modo a preencher o tempo disponível para a sua realização.”<cite>Cyril Northcote Parkinson</cite></p></div>
+<div class="bar-top"><button class="logo-btn" id="burger" aria-label="Abrir menu"><img class="lg-l" alt=""><img class="lg-d" alt=""></button><button class="tab avatar" data-tab="perfil" id="avatar" aria-label="Perfil">P</button></div>
+<p class="quote">“O trabalho se expande de modo a preencher o tempo disponível para a sua realização.”<cite>Cyril Northcote Parkinson</cite></p>
 <div class="app">
 
   <section class="panel" id="p-hoje"></section>
@@ -497,7 +501,7 @@ function renderBacklog(){
   const L=S.tasks.filter(t=>!t.date),g={};
   L.forEach(t=>{(g[t.cat]=g[t.cat]||[]).push(t)});
   $('#backlog').innerHTML=`<div class="ct" style="margin:20px 0 4px"><h2>Backlog</h2><button class="btn" id="bkAdd">Adicionar ao backlog</button></div><p class="sub" style="font-size:13px">Tarefas que você precisa fazer, mas ainda não têm data. Escolha uma data para levá-las ao calendário.</p>`
-    +(L.length?'<div class="bkg">'+Object.keys(g).map(c=>`<section class="card" style="margin-bottom:10px"><div class="ct"><h2 style="display:flex;align-items:center;gap:8px"><i class="dot" style="background:${cat(c).color}"></i>${esc(cat(c).name)}</h2><span class="meta">${g[c].length}</span></div><ul class="lts">${g[c].map(t=>`<li class="lt bkrow${t.done?' done':''}" data-bkt="${t.id}" draggable="true">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(t.name)}</b></button><span class="meta">${fmt(t.dur*60)}</span><input type="date" class="bkd" data-bk="${t.id}" aria-label="Agendar para">${xBtn(t)}</li>`).join('')}</ul></section>`).join('')+'</div>':'<div class="empty">Backlog vazio.</div>');
+    +(L.length?'<div class="bkg">'+Object.keys(g).map(c=>`<section class="card" style="margin-bottom:10px"><div class="ct"><h2 style="display:flex;align-items:center;gap:8px"><i class="dot" style="background:${cat(c).color}"></i>${esc(cat(c).name)}</h2><span class="meta">${g[c].length}</span></div><ul class="lts">${g[c].map(t=>`<li class="lt bkrow${t.done?' done':''}" data-bkt="${t.id}" draggable="true"><button class="main" data-bke="${t.id}"><b>${esc(t.name)}</b></button></li>`).join('')}</ul></section>`).join('')+'</div>':'<div class="empty">Backlog vazio.</div>');
 }
 document.addEventListener('change',e=>{const id=e.target.dataset.bk;if(!id||!e.target.value)return;const t=byId(id);if(t){t.date=e.target.value;save();render()}});
 const vlSum=A=>[['roteiro','Para roteirizar'],['gravacao','Para gravar'],['edicao','Para editar'],['post','Prontos']].map(([k,l])=>`<div class="sq"><b>${A.filter(v=>v.status===k).length}</b><span>${l}</span></div>`).join('').replace(/^/,'<div class="sq2">')+'</div>';
@@ -604,15 +608,16 @@ const idCell=v=>`<span class="dg" draggable="true" title="Arraste para reordenar
 const lateN=b=>(b.vids||[]).filter(lateV).length;
 const sqHtml=c=>`<div class="sq2"><div class="sq"><b id="sqTodo">${c.todo}</b><span>Vídeos para fazer na semana</span></div><div class="sq"><b id="sqPost">${c.post}</b><span>Prontos para postar</span></div><div class="sq"><b id="sqDone">${c.done}</b><span>Postados na semana</span></div></div>`;
 function allCounts(){return BR().reduce((a,b)=>{const c=weekCounts(b);a.todo+=c.todo;a.post+=c.post;a.done+=c.done;return a},{todo:0,post:0,done:0})}
+const fdt=d=>d?parse(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
 function renderBrand(){
   const b=BR().find(x=>x.id===OPEN[curTab()]);if(!b){OPEN[curTab()]=null;return renderUgc()}
   const V=(b.vids||[]).slice().sort((x,y)=>x.id-y.id),c=weekCounts(b);
   const opt=(o,v)=>'<option value="">—</option>'+Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('');
-  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid">${idCell(v)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="status" aria-label="Status">${opt(VST,v.status)}</select></td><td><input type="date" data-v="${v.id}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid">${idCell(v)}</td><td>${v.head?esc(v.head):'<span class="muted">sem headline</span>'}</td><td>${VST[v.status]?`<span class="stp">${VST[v.status]}</span>`:'—'}</td><td>${fdt(v.need)}</td><td>${fdt(v.sched)}</td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(sec().el).innerHTML=`<div class="tool"><button class="btn" data-back>← Marcas</button></div>`
     +`<input type="text" class="h1in" data-bn="${b.id}" value="${esc(b.name)}" maxlength="40" aria-label="Nome da marca">`
     +`${sqHtml(c)}`
-    +`<div class="tool"><h3 class="sp" style="margin:0">Vídeos</h3><button class="btn primary" id="vAdd">Adicionar vídeo</button></div>`
+    +`<div class="tool"><button class="btn primary" id="vAdd">Adicionar vídeo</button></div>`
     +(V.length?`<div class="tw"><table><thead><tr><th>ID</th><th>Headline</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:'<div class="empty">Nenhum vídeo ainda. Coloque a marca em Ativa ou adicione um vídeo.</div>');
 }
 function syncPostTask(b,v){
@@ -629,11 +634,11 @@ function renderInfl(){renderVL('infl')}
 function renderVL(key){
   const CF=VLC[key];
   const V=S[CF.arr].slice().sort((x,y)=>x.id-y.id),n=V.filter(lateV).length;
-  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid">${idCell(v)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid">${idCell(v)}</td><td>${v.head?esc(v.head):'<span class="muted">sem headline</span>'}</td><td>${VST[v.status]?`<span class="stp">${VST[v.status]}</span>`:'—'}</td><td>${fdt(v.need)}</td><td>${fdt(v.sched)}</td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(CF.el).innerHTML=`<h1>${CF.title}</h1>`
     +`<div id="vlSum">${vlSum(S[CF.arr])}</div>`
     +(n?`<p class="redbar">⚠ ${n} ${n===1?'vídeo chegou':'vídeos chegaram'} na data necessária sem agendamento.</p>`:'')
-    +`<div class="tool"><span class="sp"></span><button class="btn primary" id="cAdd" data-k="${key}">Adicionar vídeo</button></div>`
+    +`<div class="tool"><button class="btn primary" id="cAdd" data-k="${key}">Adicionar vídeo</button></div>`
     +(V.length?`<div class="tw c"><table><thead><tr><th>ID</th><th>Headline</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:'<div class="empty">Nenhum vídeo ainda. Adicione o primeiro acima.</div>');
 }
 function openVid(tr){
@@ -887,7 +892,8 @@ document.addEventListener('click',e=>{
   if(q('#hDone')){$('#hdlg').close();return}
   if(q('#bkAdd'))return openTask(null,'');
   if(x=q('[data-vgo]')){tab=x.dataset.vgo;if(x.dataset.bid&&tab in OPEN)OPEN[tab]=x.dataset.bid;return render()}
-  if((x=q('tr[data-vo] .vid'))&&!q('.dg')){openVid(x.closest('tr'));return}
+  if(x=q('[data-bke]'))return openTask(byId(x.dataset.bke));
+  if((x=q('tr[data-vo]'))&&!q('.dg,button')){openVid(x);return}
   if(q('#vdClose')){$('#vdlg').close();return}
   if(x=q('.tab')){tab=x.dataset.tab;return render()}
   if(x=q('[data-go]')){tab=x.dataset.go;return render()}
