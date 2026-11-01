@@ -193,13 +193,14 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
 .tw table{width:100%;min-width:720px;border-collapse:collapse}
 .tw th{text-align:left;font-size:12px;color:var(--muted);padding:10px 8px;font-weight:600}
-.tw td{padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+.tw td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top}
 .tw td input,.tw td select,.tw td textarea{margin:0}
 .tw tr[data-vo]{cursor:pointer}
 .tw tr[data-vo]:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
+.tw td select,.tw td input[type=date]{width:auto;max-width:100%}
 .tw .vid{font-weight:700;color:var(--muted);padding-top:15px;width:80px;cursor:pointer;text-decoration:underline dotted}
 .tw th:nth-child(2),.tw td:nth-child(2){width:42%}
 #auth{min-height:100%;display:grid;place-items:center;padding:24px}
@@ -613,7 +614,7 @@ function renderBrand(){
   const b=BR().find(x=>x.id===OPEN[curTab()]);if(!b){OPEN[curTab()]=null;return renderUgc()}
   const V=(b.vids||[]).slice().sort((x,y)=>x.id-y.id),c=weekCounts(b);
   const opt=(o,v)=>'<option value="">—</option>'+Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('');
-  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid">${idCell(v)}</td><td>${v.head?esc(v.head):'<span class="muted">sem headline</span>'}</td><td>${VST[v.status]?`<span class="stp">${VST[v.status]}</span>`:'—'}</td><td>${fdt(v.need)}</td><td>${fdt(v.sched)}</td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid">${idCell(v)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="date" data-v="${v.id}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(sec().el).innerHTML=`<div class="tool"><button class="btn" data-back>← Marcas</button></div>`
     +`<input type="text" class="h1in" data-bn="${b.id}" value="${esc(b.name)}" maxlength="40" aria-label="Nome da marca">`
     +`${sqHtml(c)}`
@@ -634,7 +635,7 @@ function renderInfl(){renderVL('infl')}
 function renderVL(key){
   const CF=VLC[key];
   const V=S[CF.arr].slice().sort((x,y)=>x.id-y.id),n=V.filter(lateV).length;
-  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid">${idCell(v)}</td><td>${v.head?esc(v.head):'<span class="muted">sem headline</span>'}</td><td>${VST[v.status]?`<span class="stp">${VST[v.status]}</span>`:'—'}</td><td>${fdt(v.need)}</td><td>${fdt(v.sched)}</td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=v=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid">${idCell(v)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(CF.el).innerHTML=`<h1>${CF.title}</h1>`
     +`<div id="vlSum">${vlSum(S[CF.arr])}</div>`
     +(n?`<p class="redbar">⚠ ${n} ${n===1?'vídeo chegou':'vídeos chegaram'} na data necessária sem agendamento.</p>`:'')
@@ -893,7 +894,7 @@ document.addEventListener('click',e=>{
   if(q('#bkAdd'))return openTask(null,'');
   if(x=q('[data-vgo]')){tab=x.dataset.vgo;if(x.dataset.bid&&tab in OPEN)OPEN[tab]=x.dataset.bid;return render()}
   if(x=q('[data-bke]'))return openTask(byId(x.dataset.bke));
-  if((x=q('tr[data-vo]'))&&!q('.dg,button')){openVid(x);return}
+  if((x=q('tr[data-vo]'))&&!q('.dg,button,input,select,textarea,label')){openVid(x);return}
   if(q('#vdClose')){$('#vdlg').close();return}
   if(x=q('.tab')){tab=x.dataset.tab;return render()}
   if(x=q('[data-go]')){tab=x.dataset.go;return render()}
