@@ -1092,6 +1092,7 @@ async function boot(){
   const{data}=await sb.auth.getSession();
   if(data.session)enter(data.session.user);else showAuth();
 }
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 boot();
 </script>
 </body>
