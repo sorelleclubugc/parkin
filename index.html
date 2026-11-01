@@ -451,17 +451,16 @@ function render(){
 let delArm=null;
 const xBtn=t=>`<button class="x${delArm===t.id?' arm':''}" data-tdel="${t.id}" aria-label="Excluir tarefa">${delArm===t.id?'Excluir?':'×'}</button>`;
 const endT=t=>{const m=mins(t.time)+t.dur;return pad(Math.floor(m/60)%24)+':'+pad(m%60)};
-function vidLateAll(){
-  const k=iso(new Date()),out=[];
+function vidNext(){
+  const t0=iso(today()),t3=iso(addD(today(),3)),out=[];
   const add=(arr,lbl,tk,bid)=>arr.forEach(v=>{
-    const r=v.status==='postado'?null:(v.sched?(v.sched<k?'postar':null):(v.need&&v.need<=k?'agendar':null));
-    if(r)out.push({v,r,lbl:typeof lbl==='function'?lbl(v):lbl,tk,bid});
+    if(v.need&&v.need>=t0&&v.need<=t3&&v.status!=='post'&&v.status!=='postado')out.push({v,lbl:typeof lbl==='function'?lbl(v):lbl,tk,bid});
   });
   S.brands.forEach(b=>add(b.vids||[],'Canvas UGC · '+b.name,'ugc',b.id));
   S.afil.forEach(b=>add(b.vids||[],'Afiliados · '+b.name,'afil',b.id));
   add(S.comum,v=>'UGC Comum'+(v.head?' · '+v.head:''),'comum');
   add(S.infl,v=>'Influencer'+(v.head?' · '+v.head:''),'infl');
-  return out.sort((x,y)=>(x.v.sched||x.v.need).localeCompare(y.v.sched||y.v.need));
+  return out.sort((x,y)=>x.v.need.localeCompare(y.v.need)||x.v.id-y.v.id);
 }
 function renderHoje(){
   const now=new Date(),k=iso(now),L=tasksOn(k),d=L.filter(t=>t.done).length,plan=L.reduce((a,t)=>a+t.dur,0),nowM=now.getHours()*60+now.getMinutes();
@@ -475,12 +474,9 @@ function renderHoje(){
   const left=`<section class="card"><div class="ct"><h2>Meu dia</h2><span class="pill">${d}/${L.length}</span></div><p class="sub">${now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})} · ${fmt(plan*60)} planejadas</p>`
     +(L.length?'':'<p class="sub">Nenhuma tarefa para hoje. <button class="btn" data-go="plano">Planejar no Plano</button></p>')
     +(free.length?`<div class="ag"><span class="hr" style="font-size:11px">sem hora</span><div class="slot">${free.map(tcard).join('')}</div></div>`:'')+rows+'</section>';
-  const late=S.tasks.filter(t=>!t.done&&t.date&&(t.date<k||(t.date===k&&t.time&&mins(t.time)+t.dur<nowM))).sort((x,y)=>(x.date+(x.time||'')).localeCompare(y.date+(y.time||'')));
-  const lateRow=t=>{const n=Math.round((parse(k)-parse(t.date))/864e5);return `<li class="lt">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(t.name)}</b><span>${esc(cat(t.cat).name)} · ${parse(t.date).toLocaleDateString('pt-BR',{day:'numeric',month:'short'})}${t.time?' '+t.time:''}</span></button><span class="badge">${n>0?n+'d de atraso':'horário passou'}</span>${xBtn(t)}</li>`};
-  const VL=vidLateAll();
-  const vRow=o=>`<li class="lt"><button class="main" data-vgo="${o.tk}" data-bid="${o.bid||''}"><b>#${o.v.id} ${esc(o.lbl)}</b><span>necessária ${o.v.need?parse(o.v.need).toLocaleDateString('pt-BR',{day:'numeric',month:'short'}):'—'}${o.v.sched?' · agendado '+parse(o.v.sched).toLocaleDateString('pt-BR',{day:'numeric',month:'short'}):''}</span></button><span class="badge">${o.r==='agendar'?'sem agendar':'não postado'}</span></li>`;
-  const right=`<div class="rcol"><section class="card"><div class="ct"><h2>Atrasos de tarefas</h2><span class="pill">${late.length}</span></div><p class="sub" style="font-size:13px">Não concluídas de dias anteriores ou de hoje com o horário já encerrado.</p>${late.length?`<ul class="lts">${late.map(lateRow).join('')}</ul>`:'<p class="sub">Nada atrasado.</p>'}</section>`
-    +`<section class="card"><div class="ct"><h2>Atrasos de vídeos</h2><span class="pill">${VL.length}</span></div><p class="sub" style="font-size:13px">Data necessária chegou sem agendamento, ou data agendada passou sem marcar como postado.</p>${VL.length?`<ul class="lts">${VL.map(vRow).join('')}</ul>`:'<p class="sub">Nenhum vídeo atrasado.</p>'}</section></div>`;
+  const NX=vidNext(),dn=d=>{const n=Math.round((parse(d)-parse(k))/864e5);return n===0?'hoje':n===1?'amanhã':'em '+n+' dias'};
+  const nRow=o=>`<li class="lt"><button class="main" data-vgo="${o.tk}" data-bid="${o.bid||''}"><b>#${o.v.id} ${esc(o.lbl)}</b><span>necessária ${dn(o.v.need)} · ${parse(o.v.need).toLocaleDateString('pt-BR',{day:'numeric',month:'short'})}</span></button><span class="stp">${VST[o.v.status]||'sem status'}</span></li>`;
+  const right=`<div class="rcol"><section class="card"><div class="ct"><h2>Próximos</h2><span class="pill">${NX.length}</span></div><p class="sub" style="font-size:13px">Vídeos com data necessária hoje ou nos próximos 3 dias que ainda não estão em Postar.</p>${NX.length?`<ul class="lts">${NX.map(nRow).join('')}</ul>`:'<p class="sub">Nenhum vídeo nos próximos 3 dias.</p>'}</section></div>`;
   $('#p-hoje').innerHTML=hab+`<div class="grid2">${left}${right}</div>`;
   maybeSunday();
 }
