@@ -1,0 +1,14 @@
+{
+  "name": "Parkin",
+  "short_name": "Parkin",
+  "description": "Organização de tempo, tarefas e vídeos",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1E262C",
+  "theme_color": "#1E262C",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
