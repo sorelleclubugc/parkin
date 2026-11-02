@@ -216,6 +216,16 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
+.top2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px;align-items:stretch}
+.nbox{display:flex;flex-direction:column}
+.nbox textarea{flex:1;min-height:84px;width:100%;resize:none;margin-top:6px}
+@media (max-width:800px){.top2{grid-template-columns:1fr}}
+.bk{cursor:pointer}
+.fotobox{margin:4px 0 12px}
+.fotobox .lbl{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.fimg{display:block;max-width:100%;max-height:240px;border-radius:12px;border:1px solid var(--line);margin-bottom:8px}
+.factions{display:flex;gap:8px}
+.fbtn{display:inline-block;font-size:15px;color:var(--ink);margin:0;cursor:pointer}
 .seg .cnt{opacity:.7;font-weight:400;margin-left:4px}
 .clip{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
 .tw td select,.tw td input[type=date]{width:auto;max-width:100%}
@@ -501,7 +511,7 @@ function vidNext(){
 function renderHoje(){
   const now=new Date(),k=iso(now),L=tasksOn(k),d=L.filter(t=>t.done).length,plan=L.reduce((a,t)=>a+t.dur,0),nowM=now.getHours()*60+now.getMinutes();
   const H=S.habits||[],hl=S.hlog[k]||{},hd=H.filter(h=>hl[h.id]).length;
-  const hab=`<section class="card" style="margin-bottom:16px"><div class="ct"><h2>Hábitos de hoje</h2><div style="display:flex;gap:8px;align-items:center"><span class="pill">${hd}/${H.length}</span><button class="btn" data-hman>Gerenciar</button></div></div>`
+  const hab=`<section class="card"><div class="ct"><h2>Hábitos de hoje</h2><div style="display:flex;gap:8px;align-items:center"><span class="pill">${hd}/${H.length}</span><button class="btn" data-hman>Gerenciar</button></div></div>`
     +(H.length?`<div class="hrow">${H.map(h=>`<button class="hchip${hl[h.id]?' on':''}" data-h="${h.id}" data-hk="${h.id}" draggable="true" aria-pressed="${!!hl[h.id]}">${hl[h.id]?'✓':'○'} ${esc(h.name)}</button>`).join('')}</div>`:'<p class="sub" style="margin:6px 0 0">Nenhum hábito. Use Gerenciar para adicionar.</p>')+'</section>';
   const timed=L.filter(t=>t.time),free=L.filter(t=>!t.time),hrs=timed.map(t=>+t.time.slice(0,2)),h0=Math.min(7,...hrs),h1=Math.max(21,...hrs);
   const tcard=(t,dr)=>`<div class="tc${t.done?' done':''}"${dr?` data-hdt="${t.id}" draggable="true"`:''} style="border-left:3px solid ${cat(t.cat).color}">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(t.name)}</b><span>${esc(cat(t.cat).name)}${t.time?` · ${t.time}–${endT(t)}`:''}</span></button><span class="meta">${fmt(t.dur*60)}</span>${xBtn(t)}</div>`;
@@ -513,7 +523,8 @@ function renderHoje(){
   const NX=vidNext(),dn=d=>{const n=Math.round((parse(d)-parse(k))/864e5);return n===0?'hoje':n===1?'amanhã':'em '+n+' dias'};
   const nRow=o=>`<li class="lt"><button class="main" data-vgo="${o.tk}" data-bid="${o.bid||''}"><b>#${o.v.id} ${esc(o.lbl)}</b><span>necessária ${dn(o.v.need)} · ${parse(o.v.need).toLocaleDateString('pt-BR',{day:'numeric',month:'short'})}</span></button><span class="stp">${VST[o.v.status]||'sem status'}</span></li>`;
   const right=`<div class="rcol"><section class="card"><div class="ct"><h2>Próximos</h2><span class="pill">${NX.length}</span></div><p class="sub" style="font-size:13px">Vídeos com data necessária hoje ou nos próximos 3 dias que ainda não estão em Postar.</p>${NX.length?`<ul class="lts">${NX.map(nRow).join('')}</ul>`:'<p class="sub">Nenhum vídeo nos próximos 3 dias.</p>'}</section></div>`;
-  $('#p-hoje').innerHTML=hab+`<div class="grid2">${left}${right}</div>`;
+  const notes=`<section class="card nbox"><div class="ct"><h2>Notas</h2></div><textarea id="notes" placeholder="Anote o que quiser…">${esc(S.notes||'')}</textarea></section>`;
+  $('#p-hoje').innerHTML=`<div class="top2">${notes}${hab}</div><div class="grid2">${left}${right}</div>`;
   maybeSunday();
 }
 function drawH(){
@@ -563,7 +574,7 @@ function dayClick(id,d){
 function renderUgc(){
   if(OPEN[curTab()])return renderBrand();
   const B=BR(),act=B.filter(b=>b.status==='ativa'),vids=b=>b.freq.reduce((a,n)=>a+n,0);
-  const row=b=>`<li class="bk${b.status==='desligado'?' off':''}" style="--sc:${ST[b.status][1]}"><div class="bnw"><button class="bn" data-open="${b.id}">${esc(b.name)}</button>${b.status==='desligado'&&sec().key==='brands'?'<span class="tagx">excluir contas/vídeos</span>':''}</div><select class="bs" data-bs="${b.id}" aria-label="Status">${Object.entries(ST).map(([k,v])=>`<option value="${k}"${k===b.status?' selected':''}>${v[0]}</option>`).join('')}</select><div class="days">${WD.map(i=>{const n=DOW[i];return `<button class="dbox${b.freq[i]?' on':''}" data-b="${b.id}" data-day="${i}" aria-label="${n}: ${b.freq[i]||0} vídeos"><small>${n}</small><b>${b.freq[i]||''}</b></button>`}).join('')}</div>${lateN(b)?`<span class="badge">${lateN(b)} sem agendar</span>`:''}<span class="meta">${vids(b)}/sem</span><button class="btn icon" data-bdel="${b.id}" aria-label="Excluir marca">×</button></li>`;
+  const row=b=>`<li class="bk${b.status==='desligado'?' off':''}" data-bo="${b.id}" style="--sc:${ST[b.status][1]}"><div class="bnw"><button class="bn" data-open="${b.id}">${esc(b.name)}</button>${b.status==='desligado'&&sec().key==='brands'?'<span class="tagx">excluir contas/vídeos</span>':''}</div><select class="bs" data-bs="${b.id}" aria-label="Status">${Object.entries(ST).map(([k,v])=>`<option value="${k}"${k===b.status?' selected':''}>${v[0]}</option>`).join('')}</select><div class="days">${WD.map(i=>{const n=DOW[i];return `<button class="dbox${b.freq[i]?' on':''}" data-b="${b.id}" data-day="${i}" aria-label="${n}: ${b.freq[i]||0} vídeos"><small>${n}</small><b>${b.freq[i]||''}</b></button>`}).join('')}</div>${lateN(b)?`<span class="badge">${lateN(b)} sem agendar</span>`:''}<span class="meta">${vids(b)}/sem</span><button class="btn icon" data-bdel="${b.id}" aria-label="Excluir marca">×</button></li>`;
   $(sec().el).innerHTML=`<h1>${sec().title}</h1><p class="sub">${act.length} ${act.length===1?'marca ativa':'marcas ativas'} · ${act.reduce((a,b)=>a+vids(b),0)} vídeos por semana</p>`
     +sqHtml(allCounts())
     +(()=>{const n=BR().reduce((a,b)=>a+lateN(b),0);return n?`<p class="redbar">⚠ ${n} ${n===1?'vídeo chegou':'vídeos chegaram'} na data necessária sem agendamento.</p>`:''})()
@@ -574,7 +585,7 @@ function renderUgc(){
     +`<p class="sub" style="font-size:13px;margin-top:12px">Clique em um dia para somar um vídeo. Dois cliques rápidos limpam o dia. Ao mudar uma marca para Contas, a tarefa de criação de contas entra no Plano para amanhã.</p>`;
   ugcMsg='';
 }
-const TIPOS={talkhead:'Talkhead',reaction:'Reaction',chat:'Chat'};
+const TIPOS={talkhead:'Talkhead',reaction:'Reaction',chat:'Chat',story:'Story',carrossel:'Carrossel'};
 const VST={roteiro:'Roteiro',gravacao:'Gravação',edicao:'Edição',post:'Postar',postado:'Postado'};
 function renumBrand(b,mutate){
   const pre='vid:'+b.id+':',map={};
@@ -650,12 +661,12 @@ function renderBrand(){
   const b=BR().find(x=>x.id===OPEN[curTab()]);if(!b){OPEN[curTab()]=null;return renderUgc()}
   const lk=curTab(),isA=LV[lk]==='arq',AL=(b.vids||[]).slice().sort((x,y)=>x.id-y.id),V=AL.filter(v=>!!v.arch===isA),nA=AL.filter(v=>v.arch).length,c=weekCounts(b);
   const opt=(o,v)=>'<option value="">—</option>'+Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('');
-  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid" data-no="${isA?i+1:v.id}">${idCell(v,isA?i+1:v.id)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="date" data-v="${v.id}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid" data-no="${isA?i+1:v.id}">${idCell(v,isA?i+1:v.id)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><select data-v="${v.id}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="date" data-v="${v.id}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(sec().el).innerHTML=`<div class="tool"><button class="btn" data-back>← Marcas</button></div>`
     +`<input type="text" class="h1in" data-bn="${b.id}" value="${esc(b.name)}" maxlength="40" aria-label="Nome da marca">`
     +`${sqHtml(c)}`
     +LVB(lk,AL.length-nA,nA,'<button class="btn primary" id="vAdd">Adicionar vídeo</button>')
-    +(V.length?`<div class="tw"><table><thead><tr><th>ID</th><th>Headline</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:(isA?'<div class="empty">Nenhum vídeo arquivado ainda. Os vídeos com status Postado vêm para cá.</div>':'<div class="empty">Nenhum vídeo ainda. Coloque a marca em Ativa ou adicione um vídeo.</div>'));
+    +(V.length?`<div class="tw"><table><thead><tr><th>ID</th><th>Headline</th><th>Tipo</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:(isA?'<div class="empty">Nenhum vídeo arquivado ainda. Os vídeos com status Postado vêm para cá.</div>':'<div class="empty">Nenhum vídeo ainda. Coloque a marca em Ativa ou adicione um vídeo.</div>'));
 }
 function syncPostTask(b,v){
   const src='vid:'+b.id+':'+v.id,t=S.tasks.find(x=>x.src===src);
@@ -679,13 +690,21 @@ function renderVL(key){
     +LVB(key,AL.length-nA,nA,'<button class="btn primary" id="cAdd" data-k="'+key+'">Adicionar vídeo</button>')
     +(V.length?`<div class="tw c"><table><thead><tr><th>ID</th><th>Headline</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:(isA?'<div class="empty">Nenhum vídeo arquivado ainda. Os vídeos com status Postado vêm para cá.</div>':'<div class="empty">Nenhum vídeo ainda. Adicione o primeiro acima.</div>'));
 }
+let vdCur=null;
+function drawFoto(){
+  const v=vdCur,b=$('#vFotoBox');if(!b||!v)return;
+  b.innerHTML='<div class="lbl">Foto</div>'+(v.foto?`<img class="fimg" src="${v.foto}" alt="Foto do vídeo"><div class="factions"><label class="btn fbtn">Trocar<input type="file" id="vFoto" accept="image/*" hidden></label><button type="button" class="btn" data-fotodel>Remover</button></div>`:'<label class="btn fbtn">Adicionar foto<input type="file" id="vFoto" accept="image/*" hidden></label>');
+}
+function resizeFit(f,max){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.7))};im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(f)})}
+document.addEventListener('change',async e=>{if(e.target.id!=='vFoto')return;const f=e.target.files[0];if(!f||!vdCur)return;try{vdCur.foto=await resizeFit(f,480);save();drawFoto()}catch(err){console.error(err)}});
 function openVid(tr){
   const key=tr.dataset.k,id=+tr.dataset.vo;let v,at,tipo='';
   if(key){v=S[VLC[key].arr].find(x=>x.id===id);at=`data-c="${id}" data-k="${key}"`}
   else{const b=BR().find(x=>x.id===OPEN[curTab()]);v=b&&b.vids.find(x=>x.id===id);at=`data-v="${id}"`;tipo=`<label>Tipo<select ${at} data-f="tipo">${optH(TIPOS,v&&v.tipo)}</select></label>`}
   if(!v)return;
   const arr=key?S[VLC[key].arr]:BR().find(x=>x.id===OPEN[curTab()]).vids,no=v.arch?arr.filter(x=>x.arch).indexOf(v)+1:id;
-  $('#vdBody').innerHTML=`<h2>Vídeo #${no}</h2><label>Headline<input type="text" ${at} data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></label>${tipo}<label>Status<select ${at} data-f="status">${optH(VST,v.status)}</select></label><label>Ideia<textarea rows="7" ${at} data-f="idea" placeholder="Descreva a ideia do vídeo">${esc(v.idea||'')}</textarea></label><div class="row2"><label>Data necessária<input type="date" ${at} data-f="need" value="${v.need||''}"></label><label>Data agendada<input type="date" ${at} data-f="sched" value="${v.sched||''}"></label></div>`;
+  $('#vdBody').innerHTML=`<h2>Vídeo #${no}</h2><label>Headline<input type="text" ${at} data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></label>${tipo}<label>Status<select ${at} data-f="status">${optH(VST,v.status)}</select></label><label>Ideia<textarea rows="7" ${at} data-f="idea" placeholder="Descreva a ideia do vídeo">${esc(v.idea||'')}</textarea></label><div class="row2"><label>Data necessária<input type="date" ${at} data-f="need" value="${v.need||''}"></label><label>Data agendada<input type="date" ${at} data-f="sched" value="${v.sched||''}"></label></div><div id="vFotoBox" class="fotobox"></div>`;
+  vdCur=v;drawFoto();
   $('#vdlg').showModal();
 }
 $('#vdlg').addEventListener('close',()=>render());
@@ -737,7 +756,14 @@ document.addEventListener('mousedown',e=>{
   const ctl=e.target.closest&&e.target.closest('input,select,textarea,button,label');
   const tr=e.target.closest&&e.target.closest('tr[data-vo]');if(tr)tr.setAttribute('draggable',ctl?'false':'true');
   const cr=e.target.closest&&e.target.closest('.crow[data-hk]');if(cr)cr.setAttribute('draggable',ctl?'false':'true');
+  const bk=e.target.closest&&e.target.closest('li.bk[data-bo]');if(bk)bk.setAttribute('draggable',ctl?'false':'true');
 });
+let dragBr=null;
+document.addEventListener('dragstart',e=>{const li=e.target.closest&&e.target.closest('li.bk[data-bo]');if(!li||li.getAttribute('draggable')!=='true')return;dragBr=li.dataset.bo;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain','b')});
+document.addEventListener('dragover',e=>{if(!dragBr)return;const li=e.target.closest&&e.target.closest('li.bk[data-bo]');if(!li||li.dataset.bo===dragBr)return;e.preventDefault();$$('.over-h').forEach(x=>x.classList.remove('over-h'));li.classList.add('over-h')});
+document.addEventListener('drop',e=>{if(!dragBr)return;const li=e.target.closest&&e.target.closest('li.bk[data-bo]');if(!li)return;e.preventDefault();const A=BR(),i=A.findIndex(b=>b.id===dragBr),j=A.findIndex(b=>b.id===li.dataset.bo);dragBr=null;if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x);save();render()});
+document.addEventListener('dragend',()=>{dragBr=null;$$('.over-h').forEach(x=>x.classList.remove('over-h'))});
+document.addEventListener('input',e=>{if(e.target.id==='notes'){S.notes=e.target.value;save()}});
 let dragV=null;
 function moveVid(d,toId){
   const mv=A=>{const i=A.findIndex(v=>v.id===d.id),j=A.findIndex(v=>v.id===toId);if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x)};
@@ -975,6 +1001,7 @@ document.addEventListener('click',e=>{
   if(x=q('[data-bdel]')){S[sec().key]=BR().filter(b=>b.id!==x.dataset.bdel);save();return renderUgc()}
   if(q('#bAdd')){addBrand();return}
   if(x=q('[data-open]')){OPEN[curTab()]=x.dataset.open;return renderUgc()}
+  if((x=q('li.bk[data-bo]'))&&!q('button,select,input,label')){OPEN[curTab()]=x.dataset.bo;return renderUgc()}
   if(q('[data-back]')){OPEN[curTab()]=null;return renderUgc()}
   if(q('#cfm')){askLater.clear();return nextAsk()}
   if(q('#sLater')){$('#sdlg').close();return}
@@ -995,6 +1022,7 @@ document.addEventListener('click',e=>{
   if(x=q('[data-vgo]')){tab=x.dataset.vgo;if(x.dataset.bid&&tab in OPEN)OPEN[tab]=x.dataset.bid;return render()}
   if(x=q('[data-bke]'))return openTask(byId(x.dataset.bke));
   if((x=q('tr[data-vo]'))&&!q('.dg,button,input,select,textarea,label')){openVid(x);return}
+  if(q('[data-fotodel]')){if(vdCur){vdCur.foto='';save();drawFoto()}return}
   if(q('#vdClose')){$('#vdlg').close();return}
   if(x=q('[data-lv]')){LV[x.dataset.lk]=x.dataset.lv;return render()}
   if(x=q('.tab')){tab=x.dataset.tab;return render()}
