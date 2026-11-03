@@ -156,6 +156,19 @@ h3{font-size:15px;margin:0 0 10px}
 #timer{position:fixed;inset:0;z-index:20;background:rgba(10,14,24,.55);overflow:auto;display:grid;place-items:center;padding:16px}
 .t-in{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:26px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .t-in{position:relative}
+.t-in.t-wide{max-width:720px}
+.t-in.t-wide .t-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.t-left{text-align:center}
+.t-cl{display:flex;flex-direction:column;gap:8px;padding-top:8px;text-align:left}
+.cli{display:flex;align-items:center;gap:8px}
+.cli input[type=text]{margin:0;flex:1;width:auto;padding:7px 9px;font-size:14px}
+.cli input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none;margin:0}
+.cli.done input[type=text]{text-decoration:line-through;opacity:.55}
+.t-linkrow{margin:-6px 0 14px}
+.t-link{display:inline-block;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+.t-link:hover{color:var(--at)}
+.t-link.x{font-size:12px;text-decoration:none}
+@media (max-width:640px){.t-in.t-wide .t-body{grid-template-columns:1fr}}
 .t-x{position:absolute;top:10px;left:10px;border:0;background:none;color:var(--muted);font-size:18px;width:36px;height:36px;border-radius:10px;line-height:1}
 .t-x:hover{background:var(--bg);color:var(--ink)}
 .t-in h2{font-size:28px;letter-spacing:-.03em;margin:4px 0 20px}
@@ -781,6 +794,8 @@ document.addEventListener('dragover',e=>{if(!dragBr)return;const li=e.target.clo
 document.addEventListener('drop',e=>{if(!dragBr)return;const li=e.target.closest&&e.target.closest('li.bk[data-bo]');if(!li)return;e.preventDefault();const A=BR(),i=A.findIndex(b=>b.id===dragBr),j=A.findIndex(b=>b.id===li.dataset.bo);dragBr=null;if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x);save();render()});
 document.addEventListener('dragend',()=>{dragBr=null;$$('.over-h').forEach(x=>x.classList.remove('over-h'))});
 document.addEventListener('input',e=>{if(e.target.id==='notes'){S.notes=e.target.value;save()}});
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset.clt===undefined||!T)return;const t=byId(T.id);if(t&&t.cl&&t.cl[+el.dataset.clt]){t.cl[+el.dataset.clt].txt=el.value;save()}});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset.clc===undefined||!T)return;const t=byId(T.id);if(t&&t.cl&&t.cl[+el.dataset.clc]){t.cl[+el.dataset.clc].done=el.checked;el.closest('.cli').classList.toggle('done',el.checked);save()}});
 let dragV=null;
 function moveVid(d,toId){
   const mv=A=>{const i=A.findIndex(v=>v.id===d.id),j=A.findIndex(v=>v.id===toId);if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x)};
@@ -963,11 +978,13 @@ function paintClock(){
 }
 function drawTimer(){
   const t=T&&byId(T.id);if(!t)return closeTimer();
+  const cl=t.cl||[];
+  const clHtml=cl.length?`<div class="t-cl">${cl.map((c,i)=>`<div class="cli${c.done?' done':''}"><input type="checkbox" data-clc="${i}" ${c.done?'checked':''} aria-label="Concluir item"><input type="text" data-clt="${i}" value="${esc(c.txt||'')}" maxlength="80" placeholder="Item ${i+1}"><span class="t-link x" data-a="cl-del" data-i="${i}" role="button" title="Remover">✕</span></div>`).join('')}${cl.length<4?'<span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar item</span>':''}</div>`:'';
   let a;
   if(t.done)a=`<p>Concluída · ${fmt(t.spent)} registrados</p><button class="btn primary" data-a="reopen">Reabrir</button><button class="btn" data-a="edit">Editar</button>`;
   else if(T.end)a=`<p>O tempo acabou. Você terminou?</p><button class="btn primary" data-a="fin">Terminei</button><button class="btn" data-a="more">Preciso de +5 min</button>`;
   else a=`<button class="btn primary" data-a="run">${T.run?'Pausar':T.el?'Continuar':'Começar'}</button><button class="btn" data-a="fin">Concluir</button><button class="btn" data-a="edit">Editar</button>`;
-  $('#timer').innerHTML=`<div class="t-in"><button class="t-x" data-a="x" aria-label="Fechar">✕</button><p class="t-cat"><i class="dot" style="background:${cat(t.cat).color}"></i>${esc(cat(t.cat).name)}</p><h2>${esc(t.name)}</h2>${descOf(t)?`<p class="t-desc">${esc(descOf(t))}</p>`:''}<div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle class="bg" cx="120" cy="120" r="104"/><circle class="fg" id="tRing" cx="120" cy="120" r="104"/></svg><div class="clock" id="tClock" role="timer"></div></div><div class="t-act">${a}</div><div class="t-act" style="margin-top:14px"><button class="btn danger" style="margin:0" data-a="del">${T.del?'Confirmar exclusão':'Excluir tarefa'}</button></div></div>`;
+  $('#timer').innerHTML=`<div class="t-in${cl.length?' t-wide':''}"><button class="t-x" data-a="x" aria-label="Fechar">✕</button><p class="t-cat"><i class="dot" style="background:${cat(t.cat).color}"></i>${esc(cat(t.cat).name)}</p><h2>${esc(t.name)}</h2>${descOf(t)?`<p class="t-desc">${esc(descOf(t))}</p>`:''}${cl.length?'':'<p class="t-linkrow"><span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar checklist</span></p>'}<div class="t-body"><div class="t-left"><div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle class="bg" cx="120" cy="120" r="104"/><circle class="fg" id="tRing" cx="120" cy="120" r="104"/></svg><div class="clock" id="tClock" role="timer"></div></div><div class="t-act">${a}</div></div>${clHtml}</div><div class="t-act" style="margin-top:14px"><button class="btn danger" style="margin:0" data-a="del">${T.del?'Confirmar exclusão':'Excluir tarefa'}</button></div></div>`;
   paintClock();
 }
 $('#timer').addEventListener('click',e=>{
@@ -980,6 +997,8 @@ $('#timer').addEventListener('click',e=>{
   else if(a==='edit')openTask(t);
   else if(a==='reopen'){toggle(t)}
   else if(a==='del'){if(!T.del){T.del=true;drawTimer()}else{S.tasks=S.tasks.filter(x=>x!==t);save();closeTimer()}}
+  else if(a==='cl-add'){t.cl=t.cl||[];if(t.cl.length<4){t.cl.push({txt:'',done:false});save();drawTimer();setTimeout(()=>{const l=$$('#timer [data-clt]').pop();if(l)l.focus()},0)}}
+  else if(a==='cl-del'){(t.cl||[]).splice(+b.dataset.i,1);save();drawTimer()}
   else if(a==='x'||a==='exit')hideTimer();
 });
 
