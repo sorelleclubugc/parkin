@@ -423,6 +423,15 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
   <div class="actions"><button class="btn primary" id="vdClose">Fechar</button></div>
 </dialog>
 
+<dialog id="mdlg">
+  <form id="mform" method="dialog">
+    <h2>Adicionar tempo</h2>
+    <label>Quanto tempo a mais? (ex.: 10, 45, 1h30)<input type="text" id="mN" autocomplete="off" value="10"></label>
+    <p class="err" id="mErr" role="alert"></p>
+    <div class="actions"><button type="button" class="btn" id="mCancel">Cancelar</button><button type="submit" class="btn primary">Adicionar</button></div>
+  </form>
+</dialog>
+
 <dialog id="tdlg">
   <form id="tform" method="dialog">
     <h2>Vídeos do teste</h2>
@@ -804,6 +813,15 @@ document.addEventListener('keydown',e=>{
   t.cl.splice(i+1,0,{txt:'',done:false});save();drawTimer();
   setTimeout(()=>{const l=$$('#timer [data-clt]')[i+1];if(l)l.focus()},0);
 });
+$('#mform').addEventListener('submit',e=>{
+  e.preventDefault();
+  const m=parseDur($('#mN').value);
+  if(!m||m<1||m>1440){$('#mErr').textContent='Tempo inválido. Use, por exemplo, 10, 45 ou 1h30.';return}
+  if(!T)return $('#mdlg').close();
+  T.rem=T.total=m*60000;T.end=false;T.run=true;T.last=Date.now();
+  $('#mdlg').close();drawTimer();
+});
+$('#mCancel').onclick=()=>$('#mdlg').close();
 let dragV=null;
 function moveVid(d,toId){
   const mv=A=>{const i=A.findIndex(v=>v.id===d.id),j=A.findIndex(v=>v.id===toId);if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x)};
@@ -958,9 +976,20 @@ $('#catDone').onclick=()=>$('#cdlg').close();
 $('#cdlg').addEventListener('close',()=>{fillCats($('#fCat').value);render()});
 
 /* cronômetro */
+let AC=null;
+function unlockAudio(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume()}catch(e){}}
+['click','touchend','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
 function beep(){
-  try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.setValueAtTime(.2,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+1);o.start();o.stop(a.currentTime+1)}catch(e){}
-  try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+  try{
+    unlockAudio();const a=AC;if(!a)throw 0;
+    [0,.4,.8,1.2].forEach(d=>{
+      const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+d;
+      o.type='sine';o.frequency.value=880;o.connect(g);g.connect(a.destination);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.45,t+.02);g.gain.setValueAtTime(.45,t+.2);g.gain.linearRampToValueAtTime(0,t+.26);
+      o.start(t);o.stop(t+.28);
+    });
+  }catch(e){}
+  try{navigator.vibrate&&navigator.vibrate([250,120,250,120,250])}catch(e){}
 }
 function openTimer(id){
   const t=byId(id);if(!t)return;
@@ -990,7 +1019,7 @@ function drawTimer(){
   const clHtml=cl.length?`<div class="t-cl">${cl.map((c,i)=>`<div class="cli${c.done?' done':''}"><input type="checkbox" data-clc="${i}" ${c.done?'checked':''} aria-label="Concluir item"><input type="text" data-clt="${i}" value="${esc(c.txt||'')}" maxlength="80" placeholder="Item ${i+1}"><span class="t-link x" data-a="cl-del" data-i="${i}" role="button" title="Remover">✕</span></div>`).join('')}${cl.length<5?'<span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar item</span>':''}</div>`:'';
   let a;
   if(t.done)a=`<p>Concluída · ${fmt(t.spent)} registrados</p><button class="btn primary" data-a="reopen">Reabrir</button><button class="btn" data-a="edit">Editar</button>`;
-  else if(T.end)a=`<p>O tempo acabou. Você terminou?</p><button class="btn primary" data-a="fin">Terminei</button><button class="btn" data-a="more">Preciso de +5 min</button>`;
+  else if(T.end)a=`<p>O tempo acabou. Você terminou?</p><button class="btn primary" data-a="fin">Terminei</button><button class="btn" data-a="more">+5 min</button><button class="btn" data-a="more-custom">Mais tempo…</button>`;
   else a=`<button class="btn primary" data-a="run">${T.run?'Pausar':T.el?'Continuar':'Começar'}</button><button class="btn" data-a="fin">Concluir</button><button class="btn" data-a="edit">Editar</button>`;
   $('#timer').innerHTML=`<div class="t-in${cl.length?' t-wide':''}"><button class="t-x" data-a="x" aria-label="Fechar">✕</button><p class="t-cat"><i class="dot" style="background:${cat(t.cat).color}"></i>${esc(cat(t.cat).name)}</p><h2>${esc(t.name)}</h2>${descOf(t)?`<p class="t-desc">${esc(descOf(t))}</p>`:''}${cl.length?'':'<p class="t-linkrow"><span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar checklist</span></p>'}<div class="t-body"><div class="t-left"><div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle class="bg" cx="120" cy="120" r="104"/><circle class="fg" id="tRing" cx="120" cy="120" r="104"/></svg><div class="clock" id="tClock" role="timer"></div></div><div class="t-act">${a}</div></div>${clHtml}</div><div class="t-act" style="margin-top:14px"><button class="btn danger" style="margin:0" data-a="del">${T.del?'Confirmar exclusão':'Excluir tarefa'}</button></div></div>`;
   paintClock();
@@ -1005,6 +1034,7 @@ $('#timer').addEventListener('click',e=>{
   else if(a==='edit')openTask(t);
   else if(a==='reopen'){toggle(t)}
   else if(a==='del'){if(!T.del){T.del=true;drawTimer()}else{S.tasks=S.tasks.filter(x=>x!==t);save();closeTimer()}}
+  else if(a==='more-custom'){$('#mErr').textContent='';$('#mN').value='10';$('#mdlg').showModal();$('#mN').focus();$('#mN').select()}
   else if(a==='cl-add'){t.cl=t.cl||[];if(t.cl.length<5){t.cl.push({txt:'',done:false});save();drawTimer();setTimeout(()=>{const l=$$('#timer [data-clt]').pop();if(l)l.focus()},0)}}
   else if(a==='cl-del'){(t.cl||[]).splice(+b.dataset.i,1);save();drawTimer()}
   else if(a==='x'||a==='exit')hideTimer();
