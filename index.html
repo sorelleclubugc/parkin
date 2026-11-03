@@ -216,6 +216,8 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
+.ag[data-hh]{cursor:pointer}
+.ag[data-hh]:hover{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .top2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px;align-items:stretch}
 .nbox{display:flex;flex-direction:column}
 .nbox textarea{flex:1;min-height:84px;width:100%;resize:none;margin-top:6px}
@@ -449,7 +451,7 @@ const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 let S={cats:[{id:'c1',name:'Trabalho',color:PAL[0]},{id:'c2',name:'Estudo',color:PAL[4]},{id:'c3',name:'Casa',color:PAL[2]},{id:'c4',name:'Saúde',color:PAL[1]}],tasks:[],theme:null};
 const S0=JSON.stringify(S);
 let KEY='parkin:v2';
-const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];migrateArch();fixIds()};norm();
+const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];migrateArch();fixIds();backfillL()};norm();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}queueSync()};
 const cat=id=>S.cats.find(c=>c.id===id)||{name:'Sem categoria',color:'#8A93A8'};
 const byId=id=>S.tasks.find(t=>t.id===id);
@@ -466,16 +468,18 @@ function applyTheme(){
 $('#theme').onclick=()=>{S.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';save();applyTheme()};
 
 /* tarefas */
-const isVidTask=t=>/^vid:/.test(t.src||'');
+const isVidTask=t=>/^(vid|lst):/.test(t.src||'');
 function descOf(t){if(isVidTask(t)){const r=findVid(t.src);return r?(r.v.head||''):''}return t.desc||''}
 function findVid(src){
-  const m=/^vid:([^:]+):(\d+)$/.exec(src||'');if(!m)return null;
+  let m=/^lst:(comum|infl):(\d+)$/.exec(src||'');
+  if(m){const v=(S[m[1]]||[]).find(x=>x.id===+m[2]);return v?{b:null,v}:null}
+  m=/^vid:([^:]+):(\d+)$/.exec(src||'');if(!m)return null;
   for(const key of ['brands','afil']){const b=(S[key]||[]).find(x=>x.id===m[1]);if(b){const v=(b.vids||[]).find(x=>x.id===+m[2]);if(v)return{b,v}}}
   return null;
 }
 function vidFromTask(t){const r=findVid(t.src);if(!r)return;if(t.done){r.v.status='postado';r.v.postedAt=r.v.postedAt||iso(new Date())}else if(r.v.status==='postado')r.v.status='post'}
-function taskFromVid(b,v){
-  const t=S.tasks.find(x=>x.src==='vid:'+b.id+':'+v.id);if(!t)return;
+function taskFromVid(o,v){
+  const src=typeof o==='string'?'lst:'+o+':'+v.id:'vid:'+o.id+':'+v.id,t=S.tasks.find(x=>x.src===src);if(!t)return;
   if(v.status==='postado'&&!t.done)finish(t,0);
   else if(v.status!=='postado'&&t.done){t.done=false;t.spent=0;t.doneDate=''}
   save();
@@ -499,7 +503,9 @@ const xBtn=t=>`<button class="x${delArm===t.id?' arm':''}" data-tdel="${t.id}" a
 const endT=t=>{const m=mins(t.time)+t.dur;return pad(Math.floor(m/60)%24)+':'+pad(m%60)};
 function vidNext(){
   const t0=iso(today()),t3=iso(addD(today(),3)),out=[];
+  const tt=new Set(S.tasks.filter(t=>t.src&&t.date===t0).map(t=>t.src));
   const add=(arr,lbl,tk,bid)=>arr.forEach(v=>{
+    if(tt.has(bid?'vid:'+bid+':'+v.id:'lst:'+tk+':'+v.id))return;
     if(v.need&&v.need>=t0&&v.need<=t3&&v.status!=='post'&&v.status!=='postado')out.push({v,lbl:typeof lbl==='function'?lbl(v):lbl,tk,bid});
   });
   S.brands.forEach(b=>add(b.vids||[],'Canvas UGC · '+b.name,'ugc',b.id));
@@ -594,7 +600,12 @@ function renumBrand(b,mutate){
   b.vids.forEach((v,i)=>v.id=i+1);b.seq=b.vids.length;
   S.tasks.forEach(t=>{if(t.src&&t.src.startsWith(pre)){const v=map[+t.src.slice(pre.length)];if(v&&b.vids.includes(v)){t.src=pre+v.id;if(!t.done)t.name=`Postar #${v.id} ${b.name}`}else t.src=null}});
 }
-function renumList(a,q){S[a].forEach((v,i)=>v.id=i+1);S[q]=S[a].length}
+function renumList(a,q){
+  const pre='lst:'+a+':',map={},T={comum:'UGC Comum',infl:'Influencer'};
+  S[a].forEach(v=>map[v.id]=v);
+  S[a].forEach((v,i)=>v.id=i+1);S[q]=S[a].length;
+  S.tasks.forEach(t=>{if(t.src&&t.src.startsWith(pre)){const v=map[+t.src.slice(pre.length)];if(v&&S[a].includes(v)){t.src=pre+v.id;if(!t.done)t.name=`Postar #${v.id} ${T[a]}`}else t.src=null}});
+}
 function fixIds(){
   [S.brands,S.afil].forEach(A=>(A||[]).forEach(b=>{b.vids=b.vids||[];b.vids.sort((x,y)=>(x.arch?1:0)-(y.arch?1:0)||x.id-y.id);if(b.vids.some((v,i)=>v.id!==i+1)||b.seq!==b.vids.length)renumBrand(b)}));
   [['comum','cseq'],['infl','iseq']].forEach(([a,q])=>{const A=S[a]||(S[a]=[]);A.sort((x,y)=>(x.arch?1:0)-(y.arch?1:0)||x.id-y.id);if(A.some((v,i)=>v.id!==i+1)||S[q]!==A.length)renumList(a,q)});
@@ -668,13 +679,18 @@ function renderBrand(){
     +LVB(lk,AL.length-nA,nA,'<button class="btn primary" id="vAdd">Adicionar vídeo</button>')
     +(V.length?`<div class="tw"><table><thead><tr><th>ID</th><th>Headline</th><th>Tipo</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:(isA?'<div class="empty">Nenhum vídeo arquivado ainda. Os vídeos com status Postado vêm para cá.</div>':'<div class="empty">Nenhum vídeo ainda. Coloque a marca em Ativa ou adicione um vídeo.</div>'));
 }
-function syncPostTask(b,v){
-  const src='vid:'+b.id+':'+v.id,t=S.tasks.find(x=>x.src===src);
+function catNamed(n,color){let c=S.cats.find(c=>c.name.toLowerCase()===n.toLowerCase());if(!c){c={id:uid(),name:n,color};S.cats.push(c)}return c.id}
+function syncPostTask(o,v){
+  const L=typeof o==='string',src=L?'lst:'+o+':'+v.id:'vid:'+o.id+':'+v.id,nm=`Postar #${v.id} ${L?(o==='infl'?'Influencer':'UGC Comum'):o.name}`,t=S.tasks.find(x=>x.src===src);
   if(!v.sched){if(t&&!t.done)S.tasks=S.tasks.filter(x=>x!==t)}
-  else if(t){if(!t.done){t.date=v.sched;t.name=`Postar #${v.id} ${b.name}`}}
-  else S.tasks.push({id:uid(),name:`Postar #${v.id} ${b.name}`,cat:ugcCat(),date:v.sched,time:'',dur:30,done:false,spent:0,doneDate:'',src});
-  taskFromVid(b,v);
+  else if(t){if(!t.done){t.date=v.sched;t.name=nm}}
+  else S.tasks.push({id:uid(),name:nm,cat:L?catNamed(o==='infl'?'Influencer':'UGC Comum',o==='infl'?'#7B4FD6':'#D98A06'):ugcCat(),date:v.sched,time:'',dur:30,done:false,spent:0,doneDate:'',src});
+  taskFromVid(o,v);
   save();
+}
+function backfillL(){
+  if(S.bfL)return;S.bfL=true;
+  ['comum','infl'].forEach(k=>(S[k]||[]).forEach(v=>{if(v.sched&&v.status!=='postado'&&!S.tasks.some(t=>t.src==='lst:'+k+':'+v.id))syncPostTask(k,v)}));
 }
 const optH=(o,v)=>'<option value="">—</option>'+Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('');
 const VLC={comum:{arr:'comum',seq:'cseq',el:'#p-comum',title:'UGC Comum'},infl:{arr:'infl',seq:'iseq',el:'#p-infl',title:'Influencer'}};
@@ -683,12 +699,12 @@ function renderInfl(){renderVL('infl')}
 function renderVL(key){
   const CF=VLC[key];
   const isA=LV[key]==='arq',AL=S[CF.arr].slice().sort((x,y)=>x.id-y.id),V=AL.filter(v=>!!v.arch===isA),nA=AL.filter(v=>v.arch).length,n=AL.filter(lateV).length;
-  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid" data-no="${isA?i+1:v.id}">${idCell(v,isA?i+1:v.id)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid" data-no="${isA?i+1:v.id}">${idCell(v,isA?i+1:v.id)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><select data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(CF.el).innerHTML=`<h1>${CF.title}</h1>`
     +`<div id="vlSum">${vlSum(S[CF.arr])}</div>`
     +(n?`<p class="redbar">⚠ ${n} ${n===1?'vídeo chegou':'vídeos chegaram'} na data necessária sem agendamento.</p>`:'')
     +LVB(key,AL.length-nA,nA,'<button class="btn primary" id="cAdd" data-k="'+key+'">Adicionar vídeo</button>')
-    +(V.length?`<div class="tw c"><table><thead><tr><th>ID</th><th>Headline</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:(isA?'<div class="empty">Nenhum vídeo arquivado ainda. Os vídeos com status Postado vêm para cá.</div>':'<div class="empty">Nenhum vídeo ainda. Adicione o primeiro acima.</div>'));
+    +(V.length?`<div class="tw c"><table><thead><tr><th>ID</th><th>Headline</th><th>Tipo</th><th>Status</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:(isA?'<div class="empty">Nenhum vídeo arquivado ainda. Os vídeos com status Postado vêm para cá.</div>':'<div class="empty">Nenhum vídeo ainda. Adicione o primeiro acima.</div>'));
 }
 let vdCur=null;
 function drawFoto(){
@@ -700,8 +716,9 @@ document.addEventListener('change',async e=>{if(e.target.id!=='vFoto')return;con
 function openVid(tr){
   const key=tr.dataset.k,id=+tr.dataset.vo;let v,at,tipo='';
   if(key){v=S[VLC[key].arr].find(x=>x.id===id);at=`data-c="${id}" data-k="${key}"`}
-  else{const b=BR().find(x=>x.id===OPEN[curTab()]);v=b&&b.vids.find(x=>x.id===id);at=`data-v="${id}"`;tipo=`<label>Tipo<select ${at} data-f="tipo">${optH(TIPOS,v&&v.tipo)}</select></label>`}
+  else{const b=BR().find(x=>x.id===OPEN[curTab()]);v=b&&b.vids.find(x=>x.id===id);at=`data-v="${id}"`}
   if(!v)return;
+  tipo=`<label>Tipo<select ${at} data-f="tipo">${optH(TIPOS,v.tipo)}</select></label>`;
   const arr=key?S[VLC[key].arr]:BR().find(x=>x.id===OPEN[curTab()]).vids,no=v.arch?arr.filter(x=>x.arch).indexOf(v)+1:id;
   $('#vdBody').innerHTML=`<h2>Vídeo #${no}</h2><label>Headline<input type="text" ${at} data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></label>${tipo}<label>Status<select ${at} data-f="status">${optH(VST,v.status)}</select></label><label>Ideia<textarea rows="7" ${at} data-f="idea" placeholder="Descreva a ideia do vídeo">${esc(v.idea||'')}</textarea></label><div class="row2"><label>Data necessária<input type="date" ${at} data-f="need" value="${v.need||''}"></label><label>Data agendada<input type="date" ${at} data-f="sched" value="${v.sched||''}"></label></div><div id="vFotoBox" class="fotobox"></div>`;
   vdCur=v;drawFoto();
@@ -802,7 +819,8 @@ document.addEventListener('input',e=>{
   const v=S[VLC[t.dataset.k||'comum'].arr].find(x=>x.id===+id);if(!v)return;
   v[t.dataset.f]=t.value;save();
   const tr=t.closest('tr');if(tr){tr.classList.toggle('alert',lateV(v));tr.querySelector('.vid').innerHTML=idCell(v,+tr.querySelector('.vid').dataset.no)}
-  if(t.dataset.f==='status'){v.postedAt=v.status==='postado'?(v.postedAt||iso(new Date())):'';save();const el=$('#vlSum');if(el)el.innerHTML=vlSum(S[VLC[t.dataset.k||'comum'].arr])}
+  if(t.dataset.f==='sched')syncPostTask(t.dataset.k||'comum',v);
+  if(t.dataset.f==='status'){v.postedAt=v.status==='postado'?(v.postedAt||iso(new Date())):'';taskFromVid(t.dataset.k||'comum',v);save();const el=$('#vlSum');if(el)el.innerHTML=vlSum(S[VLC[t.dataset.k||'comum'].arr])}
   if(t.dataset.f==='status'&&!$('#vdlg').open)render();
 });
 const LVB=(lk,nV,nA,add)=>`<div class="tool"><div class="seg"><button data-lv="vids" data-lk="${lk}" aria-pressed="${LV[lk]==='vids'}">Vídeos <span class="cnt">${nV}</span></button><button data-lv="arq" data-lk="${lk}" aria-pressed="${LV[lk]==='arq'}">Arquivados <span class="cnt">${nA}</span></button></div>${LV[lk]==='vids'?add:''}</div>`;
@@ -1009,7 +1027,7 @@ document.addEventListener('click',e=>{
   if(q('#aLater')){askLater.add(askB);nextAsk();return}
   if(q('#aYes')||q('#aNo')){answerAsk(!!q('#aYes'));return}
   if(x=q('#cAdd')){const k=x.dataset.k||'comum',C=VLC[k];S[C.arr].push({id:++S[C.seq],head:'',status:'',idea:'',need:'',sched:''});fixL(C.arr,C.seq);save();return renderVL(k)}
-  if(x=q('[data-cdel]')){const k=x.dataset.k||'comum',C=VLC[k];S[C.arr]=S[C.arr].filter(v=>v.id!==+x.dataset.cdel);renumList(C.arr,C.seq);save();return renderVL(k)}
+  if(x=q('[data-cdel]')){const k=x.dataset.k||'comum',C=VLC[k];S.tasks=S.tasks.filter(t=>t.src!=='lst:'+k+':'+x.dataset.cdel||t.done);S[C.arr]=S[C.arr].filter(v=>v.id!==+x.dataset.cdel);renumList(C.arr,C.seq);save();return renderVL(k)}
   if(x=q('[data-tdel]')){const id=x.dataset.tdel;if(delArm===id){S.tasks=S.tasks.filter(t=>t.id!==id);delArm=null;save()}else delArm=id;return render()}
   if(q('#vAdd')){const b=BR().find(y=>y.id===OPEN[curTab()]);b.vids.push({id:++b.seq,head:'',tipo:'',status:'',idea:'',need:'',sched:''});fixB(b);save();return renderUgc()}
   if(x=q('[data-vdel]')){const b=BR().find(y=>y.id===OPEN[curTab()]);renumBrand(b,()=>{b.vids=b.vids.filter(v=>v.id!==+x.dataset.vdel);S.tasks=S.tasks.filter(t=>t.src!=='vid:'+b.id+':'+x.dataset.vdel||t.done)});save();return renderUgc()}
@@ -1025,6 +1043,7 @@ document.addEventListener('click',e=>{
   if(q('[data-fotodel]')){if(vdCur){vdCur.foto='';save();drawFoto()}return}
   if(q('#vdClose')){$('#vdlg').close();return}
   if(x=q('[data-lv]')){LV[x.dataset.lk]=x.dataset.lv;return render()}
+  if((x=q('.ag[data-hh]'))&&!q('.tc,button'))return openTask(null,iso(new Date()),x.dataset.hh+':00');
   if(x=q('.tab')){tab=x.dataset.tab;return render()}
   if(x=q('[data-go]')){tab=x.dataset.go;return render()}
   if(x=q('[data-pv]')){pView=x.dataset.pv;return render()}
