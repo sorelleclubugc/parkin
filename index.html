@@ -165,7 +165,7 @@ h3{font-size:15px;margin:0 0 10px}
 .cli input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);flex:none;margin:0}
 .cli.done input[type=text]{text-decoration:line-through;opacity:.55}
 .t-linkrow{margin:-6px 0 14px}
-.t-link{display:inline-block;color:var(--muted);font-size:13px;cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+.t-link{display:inline-block;color:var(--muted);font-size:13px;cursor:pointer}
 .t-link:hover{color:var(--at)}
 .t-link.x{font-size:12px;text-decoration:none}
 @media (max-width:640px){.t-in.t-wide .t-body{grid-template-columns:1fr}}
@@ -244,7 +244,7 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .seg .cnt{opacity:.7;font-weight:400;margin-left:4px}
 .clip{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
 .tw td select,.tw td input[type=date]{width:auto;max-width:100%}
-.tw .vid{font-weight:700;color:var(--muted);padding-top:15px;width:80px;cursor:pointer;text-decoration:underline dotted}
+.tw .vid{font-weight:700;color:var(--muted);padding-top:15px;width:80px;cursor:pointer}
 .tw th:nth-child(2),.tw td:nth-child(2){width:42%}
 #auth{min-height:100%;display:grid;place-items:center;padding:24px}
 .auth-card{width:min(420px,100%);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px}
@@ -796,6 +796,14 @@ document.addEventListener('dragend',()=>{dragBr=null;$$('.over-h').forEach(x=>x.
 document.addEventListener('input',e=>{if(e.target.id==='notes'){S.notes=e.target.value;save()}});
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset.clt===undefined||!T)return;const t=byId(T.id);if(t&&t.cl&&t.cl[+el.dataset.clt]){t.cl[+el.dataset.clt].txt=el.value;save()}});
 document.addEventListener('change',e=>{const el=e.target;if(el.dataset.clc===undefined||!T)return;const t=byId(T.id);if(t&&t.cl&&t.cl[+el.dataset.clc]){t.cl[+el.dataset.clc].done=el.checked;el.closest('.cli').classList.toggle('done',el.checked);save()}});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.isComposing||!T||e.target.dataset.clt===undefined)return;
+  e.preventDefault();
+  const t=byId(T.id),i=+e.target.dataset.clt;
+  if(!t||!t.cl||!t.cl[i]||!(t.cl[i].txt||'').trim()||t.cl.length>=5)return;
+  t.cl.splice(i+1,0,{txt:'',done:false});save();drawTimer();
+  setTimeout(()=>{const l=$$('#timer [data-clt]')[i+1];if(l)l.focus()},0);
+});
 let dragV=null;
 function moveVid(d,toId){
   const mv=A=>{const i=A.findIndex(v=>v.id===d.id),j=A.findIndex(v=>v.id===toId);if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x)};
@@ -979,7 +987,7 @@ function paintClock(){
 function drawTimer(){
   const t=T&&byId(T.id);if(!t)return closeTimer();
   const cl=t.cl||[];
-  const clHtml=cl.length?`<div class="t-cl">${cl.map((c,i)=>`<div class="cli${c.done?' done':''}"><input type="checkbox" data-clc="${i}" ${c.done?'checked':''} aria-label="Concluir item"><input type="text" data-clt="${i}" value="${esc(c.txt||'')}" maxlength="80" placeholder="Item ${i+1}"><span class="t-link x" data-a="cl-del" data-i="${i}" role="button" title="Remover">✕</span></div>`).join('')}${cl.length<4?'<span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar item</span>':''}</div>`:'';
+  const clHtml=cl.length?`<div class="t-cl">${cl.map((c,i)=>`<div class="cli${c.done?' done':''}"><input type="checkbox" data-clc="${i}" ${c.done?'checked':''} aria-label="Concluir item"><input type="text" data-clt="${i}" value="${esc(c.txt||'')}" maxlength="80" placeholder="Item ${i+1}"><span class="t-link x" data-a="cl-del" data-i="${i}" role="button" title="Remover">✕</span></div>`).join('')}${cl.length<5?'<span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar item</span>':''}</div>`:'';
   let a;
   if(t.done)a=`<p>Concluída · ${fmt(t.spent)} registrados</p><button class="btn primary" data-a="reopen">Reabrir</button><button class="btn" data-a="edit">Editar</button>`;
   else if(T.end)a=`<p>O tempo acabou. Você terminou?</p><button class="btn primary" data-a="fin">Terminei</button><button class="btn" data-a="more">Preciso de +5 min</button>`;
@@ -997,7 +1005,7 @@ $('#timer').addEventListener('click',e=>{
   else if(a==='edit')openTask(t);
   else if(a==='reopen'){toggle(t)}
   else if(a==='del'){if(!T.del){T.del=true;drawTimer()}else{S.tasks=S.tasks.filter(x=>x!==t);save();closeTimer()}}
-  else if(a==='cl-add'){t.cl=t.cl||[];if(t.cl.length<4){t.cl.push({txt:'',done:false});save();drawTimer();setTimeout(()=>{const l=$$('#timer [data-clt]').pop();if(l)l.focus()},0)}}
+  else if(a==='cl-add'){t.cl=t.cl||[];if(t.cl.length<5){t.cl.push({txt:'',done:false});save();drawTimer();setTimeout(()=>{const l=$$('#timer [data-clt]').pop();if(l)l.focus()},0)}}
   else if(a==='cl-del'){(t.cl||[]).splice(+b.dataset.i,1);save();drawTimer()}
   else if(a==='x'||a==='exit')hideTimer();
 });
