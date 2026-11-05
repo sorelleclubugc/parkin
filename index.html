@@ -577,16 +577,16 @@ function vidNext(){
   return out.sort((x,y)=>x.v.need.localeCompare(y.v.need)||x.v.id-y.v.id);
 }
 function renderHoje(){
-  const now=new Date(),k=iso(now),L=tasksOn(k),d=L.filter(t=>t.done).length,plan=L.reduce((a,t)=>a+t.dur,0),nowM=now.getHours()*60+now.getMinutes();
+  const now=new Date(),k=iso(now),vk=iso(addD(today(),dayOff)),L=tasksOn(vk),d=L.filter(t=>t.done).length,plan=L.reduce((a,t)=>a+t.dur,0),nowM=now.getHours()*60+now.getMinutes();
   const H=S.habits||[],hl=S.hlog[k]||{},hd=H.filter(h=>hl[h.id]).length;
   const hab=`<section class="card"><div class="ct"><h2>Hábitos de hoje</h2><div style="display:flex;gap:8px;align-items:center"><span class="pill">${hd}/${H.length}</span><button class="btn" data-hman>Gerenciar</button></div></div>`
     +(H.length?`<div class="hrow">${H.map(h=>`<button class="hchip${hl[h.id]?' on':''}" data-h="${h.id}" data-hk="${h.id}" draggable="true" aria-pressed="${!!hl[h.id]}">${hl[h.id]?'✓':'○'} ${esc(h.name)}</button>`).join('')}</div>`:'<p class="sub" style="margin:6px 0 0">Nenhum hábito. Use Gerenciar para adicionar.</p>')+'</section>';
   const timed=L.filter(t=>t.time),free=L.filter(t=>!t.time),hrs=timed.map(t=>+t.time.slice(0,2)),h0=Math.min(7,...hrs),h1=Math.max(21,...hrs);
   const tcard=(t,dr)=>`<div class="tc${t.done?' done':''}"${dr?` data-hdt="${t.id}" draggable="true"`:''} style="border-left:3px solid ${cat(t.cat).color}">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(t.name)}</b><span>${esc(cat(t.cat).name)}${t.time?` · ${t.time}–${endT(t)}`:''}</span></button><span class="meta">${fmt(t.dur*60)}</span>${xBtn(t)}</div>`;
   let rows='';
-  for(let h=h0;h<=h1;h++)rows+=`<div class="ag${now.getHours()===h?' cur':''}" data-hh="${pad(h)}"><span class="hr">${pad(h)}:00</span><div class="slot">${timed.filter(t=>+t.time.slice(0,2)===h).map(t=>tcard(t,true)).join('')}</div></div>`;
-  const left=`<section class="card"><div class="ct"><h2>Meu dia</h2><span class="pill">${d}/${L.length}</span></div><p class="sub">${now.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})} · ${fmt(plan*60)} planejadas</p>`
-    +(L.length?'':'<p class="sub">Nenhuma tarefa para hoje. <button class="btn" data-go="plano">Planejar no Plano</button></p>')
+  for(let h=h0;h<=h1;h++)rows+=`<div class="ag${dayOff===0&&now.getHours()===h?' cur':''}" data-hh="${pad(h)}"><span class="hr">${pad(h)}:00</span><div class="slot">${timed.filter(t=>+t.time.slice(0,2)===h).map(t=>tcard(t,true)).join('')}</div></div>`;
+  const left=`<section class="card"><div class="ct"><h2>Meu dia</h2><div style="display:flex;align-items:center;gap:6px"><button class="btn icon" data-dayn="-1" aria-label="Dia anterior">‹</button><span class="pill">${d}/${L.length}</span><button class="btn icon" data-dayn="1" aria-label="Próximo dia">›</button></div></div><p class="sub">${({'-1':'Ontem · ','0':'Hoje · ','1':'Amanhã · '})[dayOff]||''}${parse(vk).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})} · ${fmt(plan*60)} planejadas</p>`
+    +(L.length?'':'<p class="sub">Nenhuma tarefa neste dia. <button class="btn" data-go="plano">Planejar no Plano</button></p>')
     +(free.length?`<div class="ag"><span class="hr" style="font-size:11px">sem hora</span><div class="slot">${free.map(t=>tcard(t,true)).join('')}</div></div>`:'')+rows+'</section>';
   const NX=vidNext(),dn=d=>{const n=Math.round((parse(d)-parse(k))/864e5);return n===0?'hoje':n===1?'amanhã':'em '+n+' dias'};
   const nRow=o=>`<li class="lt"><button class="main" data-vgo="${o.tk}" data-bid="${o.bid||''}"><b>#${o.v.id} ${esc(o.lbl)}</b><span>necessária ${dn(o.v.need)} · ${parse(o.v.need).toLocaleDateString('pt-BR',{day:'numeric',month:'short'})}</span></button><span class="stp">${VST[o.v.status]||'sem status'}</span></li>`;
@@ -617,12 +617,13 @@ function renderBacklog(){
 }
 document.addEventListener('change',e=>{const id=e.target.dataset.bk;if(!id||!e.target.value)return;const t=byId(id);if(t){t.date=e.target.value;save();render()}});
 const vlSum=A=>[['roteiro','Para roteirizar'],['gravacao','Para gravar'],['edicao','Para editar'],['post','Prontos']].map(([k,l])=>`<div class="sq"><b>${A.filter(v=>v.status===k).length}</b><span>${l}</span></div>`).join('').replace(/^/,'<div class="sq2">')+'</div>';
-let dayK=iso(new Date());setInterval(()=>{const k=iso(new Date());if(k!==dayK){dayK=k;if(U)render()}},60000);
+let dayK=iso(new Date());setInterval(()=>{const k=iso(new Date());if(k!==dayK){dayK=k;dayOff=0;if(U)render()}},60000);
 const ST={aplicar:['Aplicar','#8A93A8'],contas:['Contas','#D98A06'],teste:['Teste','#7B4FD6'],ativa:['Ativa','#15935B'],desligado:['Desligado','#C2410C']};
 let lastDay=null,ugcMsg='';
 const SECS={ugc:{key:'brands',el:'#p-ugc',title:'Canvas UGC',cat:'Canvas UGC',color:'#D6336C'},afil:{key:'afil',el:'#p-afil',title:'Afiliados',cat:'Afiliados',color:'#0E9AA7'}};
 const OPEN={ugc:null,afil:null};
 const LV={ugc:'vids',afil:'vids',comum:'vids',infl:'vids'};
+let dayOff=0;
 const curTab=()=>tab==='afil'?'afil':'ugc';
 const sec=()=>SECS[curTab()];
 const BR=()=>S[sec().key];
@@ -654,8 +655,8 @@ function renderUgc(){
   ugcMsg='';
 }
 const TIPOS={talkhead:'Talkhead',reaction:'Reaction',chat:'Chat',story:'Story',carrossel:'Carrossel'};
-const VST={roteiro:'Roteiro',gravacao:'Gravação',edicao:'Edição',aprovacao:'Aprovação',reajuste:'Reajuste',post:'Postar',postado:'Postado',pago:'Pago'};
-const isDone=v=>v.status==='postado'||v.status==='pago';
+const VST={roteiro:'Roteiro',gravacao:'Gravação',edicao:'Edição',aprovacao:'Aprovação',reajuste:'Reajuste',post:'Postar',postado:'Postado',notafiscal:'Nota fiscal',pago:'Pago'};
+const isDone=v=>v.status==='postado'||v.status==='notafiscal'||v.status==='pago';
 function renumBrand(b,mutate){if(mutate)mutate();b.seq=Math.max(b.seq||0,0,...b.vids.map(v=>v.id||0))}
 function renumList(a,q){S[q]=Math.max(S[q]||0,0,...S[a].map(v=>v.id||0))}
 function fixIds(){
@@ -1211,7 +1212,8 @@ document.addEventListener('click',e=>{
   if(q('[data-fotodel]')){if(vdCur){vdCur.foto='';save();drawFoto()}return}
   if(q('#vdClose')){$('#vdlg').close();return}
   if(x=q('[data-lv]')){LV[x.dataset.lk]=x.dataset.lv;return render()}
-  if((x=q('.ag[data-hh]'))&&!q('.tc,button'))return openTask(null,iso(new Date()),x.dataset.hh+':00');
+  if((x=q('.ag[data-hh]'))&&!q('.tc,button'))return openTask(null,iso(addD(today(),dayOff)),x.dataset.hh+':00');
+  if(x=q('[data-dayn]')){dayOff+=+x.dataset.dayn;return renderHoje()}
   if(x=q('[data-gy]')){goalY+=+x.dataset.gy;return renderPerfil()}
   if(x=q('[data-fm]')){const n=+x.dataset.fm;finM=n?new Date(finM.getFullYear(),finM.getMonth()+n,1):(()=>{const d=new Date();d.setDate(1);d.setHours(0,0,0,0);return d})();return renderFin()}
   if(q('#fAdd'))return openFin(null);
