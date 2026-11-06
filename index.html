@@ -222,13 +222,18 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
 .tw table{width:100%;min-width:720px;border-collapse:collapse}
 .tw th{text-align:left;font-size:12px;color:var(--muted);padding:10px 8px;font-weight:600}
-.tw td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:top}
+.tw td{padding:8px 8px;border-top:1px solid var(--line);vertical-align:top}
 .tw td input,.tw td select,.tw td textarea{margin:0}
 .tw tr[data-vo]{cursor:pointer}
 .tw tr[data-vo]:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
+.stw,.dtw{position:relative;display:inline-block;border:1px solid var(--line);border-radius:10px;background:var(--bg);text-align:center;vertical-align:middle}
+.stw{min-width:46px;padding:7px 8px;font-size:18px;line-height:1.2}
+.dtw{min-width:82px;padding:9px 8px;font-size:14px}
+.stw .sti,.dtw .dti{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;padding:0;border:0}
+@media (pointer:coarse){.logo-btn img{height:84px}.logo-btn{padding:6px}}
 .tw td input[type=number]{width:108px}
 .tw.f th:nth-child(2),.tw.f td:nth-child(2){width:110px}
 .tw.f th:nth-child(4),.tw.f td:nth-child(4){width:40%}
@@ -656,6 +661,8 @@ function renderUgc(){
 }
 const TIPOS={talkhead:'Talkhead',reaction:'Reaction',chat:'Chat',story:'Story',carrossel:'Carrossel'};
 const VST={roteiro:'Roteiro',gravacao:'Gravação',edicao:'Edição',aprovacao:'Aprovação',reajuste:'Reajuste',post:'Postar',postado:'Postado',notafiscal:'Nota fiscal',pago:'Pago'};
+const VE={roteiro:'📝',gravacao:'🎥',edicao:'✂️',aprovacao:'👀',reajuste:'🔧',post:'📤',postado:'✅',notafiscal:'🧾',pago:'💰'};
+const VSTE=Object.fromEntries(Object.entries(VST).map(([k,l])=>[k,VE[k]+' - '+l]));
 const isDone=v=>v.status==='postado'||v.status==='notafiscal'||v.status==='pago';
 function renumBrand(b,mutate){if(mutate)mutate();b.seq=Math.max(b.seq||0,0,...b.vids.map(v=>v.id||0))}
 function renumList(a,q){S[q]=Math.max(S[q]||0,0,...S[a].map(v=>v.id||0))}
@@ -726,7 +733,7 @@ function renderBrand(){
   const b=BR().find(x=>x.id===OPEN[curTab()]);if(!b){OPEN[curTab()]=null;return renderUgc()}
   const lk=curTab(),isA=LV[lk]==='arq',AL=(b.vids||[]).slice(),V=AL.filter(v=>!!v.arch===isA),nA=AL.filter(v=>v.arch).length,c=weekCounts(b);
   const opt=(o,v)=>'<option value="">—</option>'+Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('');
-  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><select data-v="${v.id}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="number" step="0.01" min="0" data-v="${v.id}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><input type="date" data-v="${v.id}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><span class="stw"><span class="stx">${VE[v.status]||'—'}</span><select class="sti" data-v="${v.id}" data-f="status" aria-label="Status" title="${VST[v.status]||'Sem status'}">${optH(VSTE,v.status)}</select></span></td><td><input type="number" step="0.01" min="0" data-v="${v.id}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><span class="dtw"><span class="dtx">${fdt(v.need)}</span><input type="date" class="dti" data-v="${v.id}" data-f="need" value="${v.need||''}"></span></td><td><span class="dtw"><span class="dtx">${fdt(v.sched)}</span><input type="date" class="dti" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></span></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(sec().el).innerHTML=`<div class="tool"><button class="btn" data-back>← Marcas</button></div>`
     +`<input type="text" class="h1in" data-bn="${b.id}" value="${esc(b.name)}" maxlength="40" aria-label="Nome da marca">`
     +`${sqHtml(c)}`
@@ -753,7 +760,7 @@ function renderInfl(){renderVL('infl')}
 function renderVL(key){
   const CF=VLC[key];
   const isA=LV[key]==='arq',AL=S[CF.arr].slice(),V=AL.filter(v=>!!v.arch===isA),nA=AL.filter(v=>v.arch).length,n=AL.filter(lateV).length;
-  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><select data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status">${optH(VST,v.status)}</select></td><td><input type="number" step="0.01" min="0" data-c="${v.id}" data-k="${key}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></td><td><input type="date" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><span class="stw"><span class="stx">${VE[v.status]||'—'}</span><select class="sti" data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status" title="${VST[v.status]||'Sem status'}">${optH(VSTE,v.status)}</select></span></td><td><input type="number" step="0.01" min="0" data-c="${v.id}" data-k="${key}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><span class="dtw"><span class="dtx">${fdt(v.need)}</span><input type="date" class="dti" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></span></td><td><span class="dtw"><span class="dtx">${fdt(v.sched)}</span><input type="date" class="dti" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></span></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(CF.el).innerHTML=`<h1>${CF.title}</h1>`
     +`<div id="vlSum">${vlSum(S[CF.arr])}</div>`
     +(n?`<p class="redbar">⚠ ${n} ${n===1?'vídeo chegou':'vídeos chegaram'} na data necessária sem agendamento.</p>`:'')
@@ -774,7 +781,7 @@ function openVid(tr){
   if(!v)return;
   tipo=`<label>Tipo<select ${at} data-f="tipo">${optH(TIPOS,v.tipo)}</select></label>`;
   const arr=key?S[VLC[key].arr]:BR().find(x=>x.id===OPEN[curTab()]).vids,no=id;
-  $('#vdBody').innerHTML=`<h2>Vídeo #${no}</h2><label>Headline<input type="text" ${at} data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></label>${tipo}<label>Status<select ${at} data-f="status">${optH(VST,v.status)}</select></label><label>Valor (R$)<input type="number" step="0.01" min="0" ${at} data-f="valor" value="${v.valor||''}" placeholder="0,00"></label><label>Ideia<textarea rows="7" ${at} data-f="idea" placeholder="Descreva a ideia do vídeo">${esc(v.idea||'')}</textarea></label><div class="row2"><label>Data necessária<input type="date" ${at} data-f="need" value="${v.need||''}"></label><label>Data agendada<input type="date" ${at} data-f="sched" value="${v.sched||''}"></label></div><div id="vFotoBox" class="fotobox"></div>`;
+  $('#vdBody').innerHTML=`<h2>Vídeo #${no}</h2><label>Headline<input type="text" ${at} data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></label>${tipo}<label>Status<select ${at} data-f="status">${optH(VSTE,v.status)}</select></label><label>Valor (R$)<input type="number" step="0.01" min="0" ${at} data-f="valor" value="${v.valor||''}" placeholder="0,00"></label><label>Ideia<textarea rows="7" ${at} data-f="idea" placeholder="Descreva a ideia do vídeo">${esc(v.idea||'')}</textarea></label><div class="row2"><label>Data necessária<input type="date" ${at} data-f="need" value="${v.need||''}"></label><label>Data agendada<input type="date" ${at} data-f="sched" value="${v.sched||''}"></label></div><div id="vFotoBox" class="fotobox"></div>`;
   vdCur=v;drawFoto();
   $('#vdlg').showModal();
 }
@@ -854,6 +861,8 @@ $('#mform').addEventListener('submit',e=>{
   $('#mdlg').close();drawTimer();
 });
 $('#mCancel').onclick=()=>$('#mdlg').close();
+document.addEventListener('input',e=>{const el=e.target;if(el.classList&&el.classList.contains('dti')){const x=el.previousElementSibling;if(x)x.textContent=el.value?fdt(el.value):'—'}});
+document.addEventListener('click',e=>{const el=e.target;if(el.classList&&el.classList.contains('dti')){try{el.showPicker()}catch(err){}}});
 let dragV=null;
 function moveVid(d,toId){
   const mv=A=>{const i=A.findIndex(v=>v.id===d.id),j=A.findIndex(v=>v.id===toId);if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x)};
