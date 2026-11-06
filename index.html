@@ -44,7 +44,7 @@ button{cursor:pointer}
 svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .content{flex:1;min-width:0;display:flex;flex-direction:column}
 .bar-top{display:flex;align-items:center;height:var(--bh);box-sizing:border-box;padding:0 20px;position:sticky;top:0;z-index:15;background:var(--bg)}
-.logo-btn{margin-right:auto;border:0;background:none;padding:4px;display:flex;align-items:center;border-radius:10px}
+.logo-btn{position:relative;z-index:17;touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-right:auto;border:0;background:none;padding:4px;display:flex;align-items:center;border-radius:10px}
 .logo-btn img{height:34px;width:auto}
 .avatar{width:36px;height:36px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;margin-left:auto}
 .scrim{display:none;position:fixed;inset:0;background:rgba(10,14,24,.45);z-index:25}
@@ -174,7 +174,7 @@ h3{font-size:15px;margin:0 0 10px}
 .t-in h2{font-size:28px;letter-spacing:-.03em;margin:4px 0 20px}
 .t-in h2:has(+.t-desc){margin-bottom:6px}
 .t-desc{color:var(--muted);margin:0 0 20px;font-size:15px;line-height:1.35;overflow-wrap:anywhere}
-.t-cat{display:inline-flex;align-items:center;gap:6px;color:var(--muted);margin:0}
+.t-cat{cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--muted);margin:0}
 .ring{position:relative;width:220px;height:220px;margin:0 auto 24px}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:10}
@@ -229,12 +229,25 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
+.pd{font-size:10px;line-height:1;color:var(--muted);min-height:11px;margin-bottom:3px;text-align:center}
+.pd.late{color:var(--danger);font-weight:600}
+.sq.rec{position:relative;max-width:230px;min-width:150px;gap:2px;justify-content:flex-start}
+.sq.rec .rl{font-size:11px;letter-spacing:.06em;font-weight:700;color:var(--muted)}
+.sq.rec b{font-size:26px;color:#D9622B;margin-top:4px}
+.sq.rec small{font-size:11px;line-height:1.3}
+.sq.rec .g{color:var(--muted)}
+.sq.rec .r{color:var(--danger)}
+.sq.rec .ric{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,#D9622B 18%,transparent);display:grid;place-items:center;color:#D9622B}
+.sq.rec .ric svg{width:16px;height:16px}
 .stw,.dtw{position:relative;display:inline-block;border:1px solid var(--line);border-radius:10px;background:var(--bg);text-align:center;vertical-align:middle}
 .stw{min-width:46px;padding:7px 8px;font-size:18px;line-height:1.2}
 .dtw{min-width:82px;padding:9px 8px;font-size:14px}
 .stw .sti,.dtw .dti{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;padding:0;border:0}
 @media (pointer:coarse){:root{--bh:92px}.logo-btn img{height:72px}.logo-btn{padding:6px}.avatar{width:72px;height:72px;font-size:30px}.quote{font-size:21px}.quote cite{font-size:15px;margin-top:3px}}
 .tw td input[type=number]{width:108px}
+.tw td:last-child{width:76px;padding-left:18px}
+.tw.f td:last-child{width:auto;padding-left:8px}
+@media (pointer:coarse){.tw .btn.icon{width:60px;height:52px;font-size:22px}}
 .tw.f th:nth-child(2),.tw.f td:nth-child(2){width:110px}
 .tw.f th:nth-child(4),.tw.f td:nth-child(4){width:40%}
 .tw tr[data-fe]{cursor:pointer}
@@ -256,7 +269,8 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .nbox{display:flex;flex-direction:column}
 .nbox textarea{flex:1;min-height:84px;width:100%;resize:none;margin-top:6px}
 @media (max-width:800px){.top2{grid-template-columns:1fr}}
-.bk{cursor:pointer}
+.bk{cursor:pointer;-webkit-touch-callout:none}
+.bk.lifting{opacity:.65;transform:scale(1.01);box-shadow:0 8px 24px rgba(0,0,0,.25)}
 .fotobox{margin:4px 0 12px}
 .fotobox .lbl{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:6px}
 .fimg{display:block;max-width:100%;max-height:240px;border-radius:12px;border:1px solid var(--line);margin-bottom:8px}
@@ -621,7 +635,7 @@ function renderBacklog(){
     +(L.length?'<div class="bkg">'+Object.keys(g).map(c=>`<section class="card" style="margin-bottom:10px"><div class="ct"><h2 style="display:flex;align-items:center;gap:8px"><i class="dot" style="background:${cat(c).color}"></i>${esc(cat(c).name)}</h2><span class="meta">${g[c].length}</span></div><ul class="lts">${g[c].map(t=>`<li class="lt bkrow${t.done?' done':''}" data-bkt="${t.id}" draggable="true"><button class="main" data-bke="${t.id}"><b>${esc(t.name)}</b></button></li>`).join('')}</ul></section>`).join('')+'</div>':'<div class="empty">Backlog vazio.</div>');
 }
 document.addEventListener('change',e=>{const id=e.target.dataset.bk;if(!id||!e.target.value)return;const t=byId(id);if(t){t.date=e.target.value;save();render()}});
-const vlSum=A=>[['roteiro','Para roteirizar'],['gravacao','Para gravar'],['edicao','Para editar'],['post','Prontos']].map(([k,l])=>`<div class="sq"><b>${A.filter(v=>v.status===k).length}</b><span>${l}</span></div>`).join('').replace(/^/,'<div class="sq2">')+'</div>';
+const vlSum=A=>[['roteiro','Para roteirizar'],['gravacao','Para gravar'],['edicao','Para editar'],['post','Prontos']].map(([k,l])=>`<div class="sq"><b>${A.filter(v=>v.status===k).length}</b><span>${l}</span></div>`).join('').replace(/^/,'<div class="sq2">')+recSq(recStats(A))+'</div>';
 let dayK=iso(new Date());setInterval(()=>{const k=iso(new Date());if(k!==dayK){dayK=k;dayOff=0;if(U)render()}},60000);
 const ST={aplicar:['Aplicar','#8A93A8'],contas:['Contas','#D98A06'],teste:['Teste','#7B4FD6'],ativa:['Ativa','#15935B'],desligado:['Desligado','#C2410C']};
 let lastDay=null,ugcMsg='';
@@ -650,7 +664,7 @@ function renderUgc(){
   const B=BR(),act=B.filter(b=>b.status==='ativa'),vids=b=>b.freq.reduce((a,n)=>a+n,0);
   const row=b=>`<li class="bk${b.status==='desligado'?' off':''}" data-bo="${b.id}" style="--sc:${ST[b.status][1]}"><div class="bnw"><button class="bn" data-open="${b.id}">${esc(b.name)}</button>${b.status==='desligado'&&sec().key==='brands'?'<span class="tagx">excluir contas/vídeos</span>':''}</div><select class="bs" data-bs="${b.id}" aria-label="Status">${Object.entries(ST).map(([k,v])=>`<option value="${k}"${k===b.status?' selected':''}>${v[0]}</option>`).join('')}</select><div class="days">${WD.map(i=>{const n=DOW[i];return `<button class="dbox${b.freq[i]?' on':''}" data-b="${b.id}" data-day="${i}" aria-label="${n}: ${b.freq[i]||0} vídeos"><small>${n}</small><b>${b.freq[i]||''}</b></button>`}).join('')}</div>${lateN(b)?`<span class="badge">${lateN(b)} sem agendar</span>`:''}<span class="meta">${vids(b)}/sem</span><button class="btn icon" data-bdel="${b.id}" aria-label="Excluir marca">×</button></li>`;
   $(sec().el).innerHTML=`<h1>${sec().title}</h1><p class="sub">${act.length} ${act.length===1?'marca ativa':'marcas ativas'} · ${act.reduce((a,b)=>a+vids(b),0)} vídeos por semana</p>`
-    +sqHtml(allCounts())
+    +sqHtml(allCounts(),recSq(recStats(BR().flatMap(b=>b.vids||[]))))
     +(()=>{const n=BR().reduce((a,b)=>a+lateN(b),0);return n?`<p class="redbar">⚠ ${n} ${n===1?'vídeo chegou':'vídeos chegaram'} na data necessária sem agendamento.</p>`:''})()
     +(ugcMsg?`<p class="note">${esc(ugcMsg)}</p>`:'')
     +pendingBanner()
@@ -726,17 +740,17 @@ function weekCounts(b){
 const lateV=v=>!!(v.need&&v.need<=iso(new Date())&&!v.sched&&!isDone(v));
 const idCell=(v,no)=>`#${no??v.id}${lateV(v)?'<small class="al">⚠ agendar</small>':''}`;
 const lateN=b=>(b.vids||[]).filter(lateV).length;
-const sqHtml=c=>`<div class="sq2"><div class="sq"><b id="sqTodo">${c.todo}</b><span>Vídeos para fazer na semana</span></div><div class="sq"><b id="sqPost">${c.post}</b><span>Prontos para postar</span></div><div class="sq"><b id="sqDone">${c.done}</b><span>Postados na semana</span></div></div>`;
+const sqHtml=(c,x)=>`<div class="sq2"><div class="sq"><b id="sqTodo">${c.todo}</b><span>Vídeos para fazer na semana</span></div><div class="sq"><b id="sqPost">${c.post}</b><span>Prontos para postar</span></div><div class="sq"><b id="sqDone">${c.done}</b><span>Postados na semana</span></div>${x||''}</div>`;
 function allCounts(){return BR().reduce((a,b)=>{const c=weekCounts(b);a.todo+=c.todo;a.post+=c.post;a.done+=c.done;return a},{todo:0,post:0,done:0})}
 const fdt=d=>d?parse(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
 function renderBrand(){
   const b=BR().find(x=>x.id===OPEN[curTab()]);if(!b){OPEN[curTab()]=null;return renderUgc()}
   const lk=curTab(),isA=LV[lk]==='arq',AL=(b.vids||[]).slice(),V=AL.filter(v=>!!v.arch===isA),nA=AL.filter(v=>v.arch).length,c=weekCounts(b);
   const opt=(o,v)=>'<option value="">—</option>'+Object.entries(o).map(([k,l])=>`<option value="${k}"${k===v?' selected':''}>${l}</option>`).join('');
-  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><span class="stw"><span class="stx">${VE[v.status]||'—'}</span><select class="sti" data-v="${v.id}" data-f="status" aria-label="Status" title="${VST[v.status]||'Sem status'}">${optH(VSTE,v.status)}</select></span></td><td><input type="number" step="0.01" min="0" data-v="${v.id}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><span class="dtw"><span class="dtx">${fdt(v.need)}</span><input type="date" class="dti" data-v="${v.id}" data-f="need" value="${v.need||''}"></span></td><td><span class="dtw"><span class="dtx">${fdt(v.sched)}</span><input type="date" class="dti" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></span></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-v="${v.id}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-v="${v.id}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><span class="stw"><span class="stx">${VE[v.status]||'—'}</span><select class="sti" data-v="${v.id}" data-f="status" aria-label="Status" title="${VST[v.status]||'Sem status'}">${optH(VSTE,v.status)}</select></span></td><td>${pdMini(v)}<input type="number" step="0.01" min="0" data-v="${v.id}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><span class="dtw"><span class="dtx">${fdt(v.need)}</span><input type="date" class="dti" data-v="${v.id}" data-f="need" value="${v.need||''}"></span></td><td><span class="dtw"><span class="dtx">${fdt(v.sched)}</span><input type="date" class="dti" data-v="${v.id}" data-f="sched" value="${v.sched||''}"></span></td><td><button class="btn icon" data-vdel="${v.id}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(sec().el).innerHTML=`<div class="tool"><button class="btn" data-back>← Marcas</button></div>`
     +`<input type="text" class="h1in" data-bn="${b.id}" value="${esc(b.name)}" maxlength="40" aria-label="Nome da marca">`
-    +`${sqHtml(c)}`
+    +`${sqHtml(c,recSq(recStats(b.vids||[])))}`
     +LVB(lk,AL.length-nA,nA,'<button class="btn primary" id="vAdd">Adicionar vídeo</button>')
     +(V.length?`<div class="tw"><table><thead><tr><th>ID</th><th>Headline</th><th>Tipo</th><th>Status</th><th>Valor</th><th>Data necessária</th><th>Data agendada</th><th></th></tr></thead><tbody>${V.map(row).join('')}</tbody></table></div>`:(isA?'<div class="empty">Nenhum vídeo arquivado ainda. Os vídeos com status Postado vêm para cá.</div>':'<div class="empty">Nenhum vídeo ainda. Coloque a marca em Ativa ou adicione um vídeo.</div>'));
 }
@@ -760,7 +774,7 @@ function renderInfl(){renderVL('infl')}
 function renderVL(key){
   const CF=VLC[key];
   const isA=LV[key]==='arq',AL=S[CF.arr].slice(),V=AL.filter(v=>!!v.arch===isA),nA=AL.filter(v=>v.arch).length,n=AL.filter(lateV).length;
-  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><span class="stw"><span class="stx">${VE[v.status]||'—'}</span><select class="sti" data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status" title="${VST[v.status]||'Sem status'}">${optH(VSTE,v.status)}</select></span></td><td><input type="number" step="0.01" min="0" data-c="${v.id}" data-k="${key}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><span class="dtw"><span class="dtx">${fdt(v.need)}</span><input type="date" class="dti" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></span></td><td><span class="dtw"><span class="dtx">${fdt(v.sched)}</span><input type="date" class="dti" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></span></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
+  const row=(v,i)=>`<tr class="${lateV(v)?'alert':''}" data-vo="${v.id}" data-k="${key}"><td class="vid" data-no="${v.id}">${idCell(v,v.id)}</td><td><input type="text" data-c="${v.id}" data-k="${key}" data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></td><td><select data-c="${v.id}" data-k="${key}" data-f="tipo" aria-label="Tipo">${optH(TIPOS,v.tipo)}</select></td><td><span class="stw"><span class="stx">${VE[v.status]||'—'}</span><select class="sti" data-c="${v.id}" data-k="${key}" data-f="status" aria-label="Status" title="${VST[v.status]||'Sem status'}">${optH(VSTE,v.status)}</select></span></td><td>${pdMini(v)}<input type="number" step="0.01" min="0" data-c="${v.id}" data-k="${key}" data-f="valor" value="${v.valor||''}" placeholder="R$ 0,00"></td><td><span class="dtw"><span class="dtx">${fdt(v.need)}</span><input type="date" class="dti" data-c="${v.id}" data-k="${key}" data-f="need" value="${v.need||''}"></span></td><td><span class="dtw"><span class="dtx">${fdt(v.sched)}</span><input type="date" class="dti" data-c="${v.id}" data-k="${key}" data-f="sched" value="${v.sched||''}"></span></td><td><button class="btn icon" data-cdel="${v.id}" data-k="${key}" aria-label="Excluir vídeo">×</button></td></tr>`;
   $(CF.el).innerHTML=`<h1>${CF.title}</h1>`
     +`<div id="vlSum">${vlSum(S[CF.arr])}</div>`
     +(n?`<p class="redbar">⚠ ${n} ${n===1?'vídeo chegou':'vídeos chegaram'} na data necessária sem agendamento.</p>`:'')
@@ -781,7 +795,7 @@ function openVid(tr){
   if(!v)return;
   tipo=`<label>Tipo<select ${at} data-f="tipo">${optH(TIPOS,v.tipo)}</select></label>`;
   const arr=key?S[VLC[key].arr]:BR().find(x=>x.id===OPEN[curTab()]).vids,no=id;
-  $('#vdBody').innerHTML=`<h2>Vídeo #${no}</h2><label>Headline<input type="text" ${at} data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></label>${tipo}<label>Status<select ${at} data-f="status">${optH(VSTE,v.status)}</select></label><label>Valor (R$)<input type="number" step="0.01" min="0" ${at} data-f="valor" value="${v.valor||''}" placeholder="0,00"></label><label>Ideia<textarea rows="7" ${at} data-f="idea" placeholder="Descreva a ideia do vídeo">${esc(v.idea||'')}</textarea></label><div class="row2"><label>Data necessária<input type="date" ${at} data-f="need" value="${v.need||''}"></label><label>Data agendada<input type="date" ${at} data-f="sched" value="${v.sched||''}"></label></div><div id="vFotoBox" class="fotobox"></div>`;
+  $('#vdBody').innerHTML=`<h2>Vídeo #${no}</h2><label>Headline<input type="text" ${at} data-f="head" value="${esc(v.head||'')}" placeholder="Headline"></label>${tipo}<label>Status<select ${at} data-f="status">${optH(VSTE,v.status)}</select></label><div class="row2"><label>Valor (R$)<input type="number" step="0.01" min="0" ${at} data-f="valor" value="${v.valor||''}" placeholder="0,00"></label><label>Data do pagamento<input type="date" ${at} data-f="payDate" value="${v.payDate||''}"></label></div><label>Ideia<textarea rows="7" ${at} data-f="idea" placeholder="Descreva a ideia do vídeo">${esc(v.idea||'')}</textarea></label><div class="row2"><label>Data necessária<input type="date" ${at} data-f="need" value="${v.need||''}"></label><label>Data agendada<input type="date" ${at} data-f="sched" value="${v.sched||''}"></label></div><div id="vFotoBox" class="fotobox"></div>`;
   vdCur=v;drawFoto();
   $('#vdlg').showModal();
 }
@@ -863,6 +877,29 @@ $('#mform').addEventListener('submit',e=>{
 $('#mCancel').onclick=()=>$('#mdlg').close();
 document.addEventListener('input',e=>{const el=e.target;if(el.classList&&el.classList.contains('dti')){const x=el.previousElementSibling;if(x)x.textContent=el.value?fdt(el.value):'—'}});
 document.addEventListener('click',e=>{const el=e.target;if(el.classList&&el.classList.contains('dti')){try{el.showPicker()}catch(err){}}});
+let tb=null;
+const brOver=()=>$$('.over-h').forEach(x=>x.classList.remove('over-h'));
+document.addEventListener('touchstart',e=>{
+  const li=e.target.closest&&e.target.closest('li.bk[data-bo]');if(!li||e.target.closest('button,select,input,label'))return;
+  const t=e.touches[0];tb={id:li.dataset.bo,x:t.clientX,y:t.clientY,active:false,li};
+  tb.timer=setTimeout(()=>{if(tb){tb.active=true;li.classList.add('lifting');try{navigator.vibrate&&navigator.vibrate(25)}catch(err){}}},380);
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(!tb)return;const t=e.touches[0];
+  if(!tb.active){if(Math.hypot(t.clientX-tb.x,t.clientY-tb.y)>10){clearTimeout(tb.timer);tb=null}return}
+  e.preventDefault();brOver();
+  const el=document.elementFromPoint(t.clientX,t.clientY),r=el&&el.closest('li.bk[data-bo]');
+  if(r&&r!==tb.li)r.classList.add('over-h');
+},{passive:false});
+document.addEventListener('touchend',e=>{
+  if(!tb)return;clearTimeout(tb.timer);const w=tb;tb=null;w.li.classList.remove('lifting');brOver();
+  if(!w.active)return;
+  const t=e.changedTouches[0],el=document.elementFromPoint(t.clientX,t.clientY),r=el&&el.closest('li.bk[data-bo]');
+  if(!r||r.dataset.bo===w.id)return;
+  const A=BR(),i=A.findIndex(b=>b.id===w.id),j=A.findIndex(b=>b.id===r.dataset.bo);
+  if(i<0||j<0)return;const[x]=A.splice(i,1);A.splice(j,0,x);save();render();
+});
+document.addEventListener('touchcancel',()=>{if(tb){clearTimeout(tb.timer);tb.li.classList.remove('lifting');tb=null;brOver()}});
 let dragV=null;
 function moveVid(d,toId){
   const mv=A=>{const i=A.findIndex(v=>v.id===d.id),j=A.findIndex(v=>v.id===toId);if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x)};
@@ -900,7 +937,7 @@ document.addEventListener('input',e=>{
   const t=e.target,id=t.dataset.c;if(!id)return;
   const v=S[VLC[t.dataset.k||'comum'].arr].find(x=>x.id===+id);if(!v)return;
   if(t.dataset.f==='status'&&t.value==='pago'&&v.status!=='pago'){t.value=v.status||'';askPago({o:(t.dataset.k||'comum'),v});return}
-  const prev=v[t.dataset.f];v[t.dataset.f]=t.value;save();if(t.dataset.f==='status'&&prev==='pago'&&t.value!=='pago')unPago((t.dataset.k||'comum'),v);
+  const prev=v[t.dataset.f];v[t.dataset.f]=t.value;save();if(t.dataset.f==='status'&&prev==='pago'&&t.value!=='pago')unPago((t.dataset.k||'comum'),v);if(t.dataset.f==='valor'||t.dataset.f==='payDate')refreshRec(S[VLC[t.dataset.k||'comum'].arr]);
   const tr=t.closest('tr');if(tr){tr.classList.toggle('alert',lateV(v));tr.querySelector('.vid').innerHTML=idCell(v,+tr.querySelector('.vid').dataset.no)}
   if(t.dataset.f==='sched')syncPostTask(t.dataset.k||'comum',v);
   if(t.dataset.f==='status'){v.postedAt=isDone(v)?(v.postedAt||iso(new Date())):'';taskFromVid(t.dataset.k||'comum',v);save();const el=$('#vlSum');if(el)el.innerHTML=vlSum(S[VLC[t.dataset.k||'comum'].arr])}
@@ -930,6 +967,16 @@ function migrateArch(){
   });
   S.arch=[];
 }
+const brs=n=>{n=Number(n)||0;return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:Number.isInteger(n)?0:2,maximumFractionDigits:2})};
+const pdMini=v=>v.payDate?`<div class="pd${v.status!=='pago'&&v.payDate<iso(new Date())?' late':''}">${fdt(v.payDate)}</div>`:'<div class="pd"></div>';
+function recStats(list){
+  const t0=iso(new Date());let rec=0,got=0,late=0;
+  list.forEach(v=>{const n=Number(v.valor)||0;if(!n)return;if(v.status==='pago')got+=n;else if(v.payDate){if(v.payDate>=t0)rec+=n;else late+=n}});
+  return{rec,got,late};
+}
+const recSq=st=>`<div class="sq rec"><span class="ric"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span><span class="rl">RECEBER R$</span><b>${brs(st.rec)}</b><small class="g">Recebido: ${brs(st.got)}</small><small class="r">⚠ ${brs(st.late)} em atraso</small></div>`;
+const allVids=()=>[...S.brands.flatMap(b=>b.vids||[]),...S.afil.flatMap(b=>b.vids||[]),...S.comum,...S.infl];
+function refreshRec(list){const el=document.querySelector('.sq.rec');if(el)el.outerHTML=recSq(recStats(list))}
 const brl=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 let finM=(()=>{const d=new Date();d.setDate(1);d.setHours(0,0,0,0);return d})(),finEd=null,finT='in',goalY=new Date().getFullYear(),pg=null;
 function addMon(ds,n){const d=parse(ds),day=d.getDate(),r=new Date(d.getFullYear(),d.getMonth()+n,1),last=new Date(r.getFullYear(),r.getMonth()+1,0).getDate();r.setDate(Math.min(day,last));return iso(r)}
@@ -949,7 +996,7 @@ function renderFin(){
   const sq=(b,l,c)=>`<div class="sq"><b class="${c||''}">${b}</b><span>${l}</span></div>`;
   const row=f=>`<tr data-fe="${f.id}"><td>${fdt(f.date)}</td><td><span class="ftag ${f.type}">${f.type==='in'?'Entrada':'Saída'}</span></td><td>${esc(f.cat)}</td><td>${esc(f.desc)}${f.rid?' <span class="muted">↻</span>':''}</td><td class="fv ${f.type}">${f.type==='in'?'+':'−'} ${brl(f.val)}</td></tr>`;
   $('#p-fin').innerHTML=`<div class="tool"><h1 class="pt1">${finM.toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</h1><button class="btn icon" data-fm="-1" aria-label="Mês anterior">‹</button><button class="btn" data-fm="0">Hoje</button><button class="btn icon" data-fm="1" aria-label="Próximo mês">›</button><button class="btn primary" id="fAdd">Adicionar</button></div>`
-    +`<div class="sq2 fsq">${sq(pct===null?'—':pct+'%','Meta de ganhos'+(goal?` · ${brl(ins)} de ${brl(goal)}`:' · defina no Perfil'))}${sq(brl(ins),'Entradas do mês','in')}${sq(brl(outs),'Saídas do mês','out')}${sq(brl(bal),'Saldo total',bal<0?'out':'')}</div>`
+    +`<div class="sq2 fsq">${sq(pct===null?'—':pct+'%','Meta de ganhos'+(goal?` · ${brl(ins)} de ${brl(goal)}`:' · defina no Perfil'))}${sq(brl(ins),'Entradas do mês','in')}${sq(brl(outs),'Saídas do mês','out')}${sq(brl(bal),'Saldo total',bal<0?'out':'')}${recSq(recStats(allVids()))}</div>`
     +(M.length?`<div class="tw f"><table><thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th>Valor</th></tr></thead><tbody>${M.map(row).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma movimentação neste mês.</div>');
 }
 function fillFcl(){$('#fcl').innerHTML=(S.fcats[finT]||[]).map(c=>`<option value="${esc(c)}">`).join('')}
@@ -994,7 +1041,7 @@ $('#pform').addEventListener('submit',e=>{
   e.preventDefault();const d=$('#pDate').value;
   if(!d||!pg){$('#pErr').textContent='Informe a data.';return}
   const{o,v}=pg,L=typeof o==='string',src=vSrc(o,v),sec=L?(o==='infl'?'Influencer':'UGC Comum'):(S.afil.includes(o)?'Afiliados':'Canvas UGC');
-  v.status='pago';v.paidOn=d;v.postedAt=v.postedAt||iso(new Date());
+  v.status='pago';v.paidOn=d;v.payDate=v.payDate||d;v.postedAt=v.postedAt||iso(new Date());
   addFcat('in',sec);S.fin=S.fin.filter(f=>f.src!==src);
   S.fin.push({id:uid(),type:'in',cat:sec,desc:`Vídeo #${v.id} · ${L?sec:o.name}${v.head?' · '+v.head:''}`,val:Number(v.valor)||0,date:d,src});
   taskFromVid(o,v);save();$('#pdlg').close();pg=null;
@@ -1142,7 +1189,7 @@ function drawTimer(){
   if(t.done)a=`<p>Concluída · ${fmt(t.spent)} registrados</p><button class="btn primary" data-a="reopen">Reabrir</button><button class="btn" data-a="edit">Editar</button>`;
   else if(T.end)a=`<p>O tempo acabou. Você terminou?</p><button class="btn primary" data-a="fin">Terminei</button><button class="btn" data-a="more">+5 min</button><button class="btn" data-a="more-custom">Mais tempo…</button>`;
   else a=`<button class="btn primary" data-a="run">${T.run?'Pausar':T.el?'Continuar':'Começar'}</button><button class="btn" data-a="fin">Concluir</button><button class="btn" data-a="edit">Editar</button>`;
-  $('#timer').innerHTML=`<div class="t-in${cl.length?' t-wide':''}"><button class="t-x" data-a="x" aria-label="Fechar">✕</button><p class="t-cat"><i class="dot" style="background:${cat(t.cat).color}"></i>${esc(cat(t.cat).name)}</p><h2>${esc(t.name)}</h2>${descOf(t)?`<p class="t-desc">${esc(descOf(t))}</p>`:''}${cl.length?'':'<p class="t-linkrow"><span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar checklist</span></p>'}<div class="t-body"><div class="t-left"><div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle class="bg" cx="120" cy="120" r="104"/><circle class="fg" id="tRing" cx="120" cy="120" r="104"/></svg><div class="clock" id="tClock" role="timer"></div></div><div class="t-act">${a}</div></div>${clHtml}</div><div class="t-act" style="margin-top:14px"><button class="btn danger" style="margin:0" data-a="del">${T.del?'Confirmar exclusão':'Excluir tarefa'}</button></div></div>`;
+  $('#timer').innerHTML=`<div class="t-in${cl.length?' t-wide':''}"><button class="t-x" data-a="x" aria-label="Fechar">✕</button><p class="t-cat" data-a="cat" role="button" title="Editar categoria"><i class="dot" style="background:${cat(t.cat).color}"></i>${esc(cat(t.cat).name)}</p><h2>${esc(t.name)}</h2>${descOf(t)?`<p class="t-desc">${esc(descOf(t))}</p>`:''}${cl.length?'':'<p class="t-linkrow"><span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar checklist</span></p>'}<div class="t-body"><div class="t-left"><div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle class="bg" cx="120" cy="120" r="104"/><circle class="fg" id="tRing" cx="120" cy="120" r="104"/></svg><div class="clock" id="tClock" role="timer"></div></div><div class="t-act">${a}</div></div>${clHtml}</div><div class="t-act" style="margin-top:14px"><button class="btn danger" style="margin:0" data-a="del">${T.del?'Confirmar exclusão':'Excluir tarefa'}</button></div></div>`;
   paintClock();
 }
 $('#timer').addEventListener('click',e=>{
@@ -1155,6 +1202,7 @@ $('#timer').addEventListener('click',e=>{
   else if(a==='edit')openTask(t);
   else if(a==='reopen'){toggle(t)}
   else if(a==='del'){if(!T.del){T.del=true;drawTimer()}else{S.tasks=S.tasks.filter(x=>x!==t);save();closeTimer()}}
+  else if(a==='cat'){openTask(t);setTimeout(()=>$('#fCat').focus(),60)}
   else if(a==='more-custom'){$('#mErr').textContent='';$('#mN').value='10';$('#mdlg').showModal();$('#mN').focus();$('#mN').select()}
   else if(a==='cl-add'){t.cl=t.cl||[];if(t.cl.length<5){t.cl.push({txt:'',done:false});save();drawTimer();setTimeout(()=>{const l=$$('#timer [data-clt]').pop();if(l)l.focus()},0)}}
   else if(a==='cl-del'){(t.cl||[]).splice(+b.dataset.i,1);save();drawTimer()}
@@ -1262,7 +1310,7 @@ document.addEventListener('input',e=>{
   const t=e.target,id=t.dataset.v;if(!id)return;
   const b=BR().find(x=>x.id===OPEN[curTab()]),v=b&&b.vids.find(x=>x.id===+id);if(!v)return;
   if(t.dataset.f==='status'&&t.value==='pago'&&v.status!=='pago'){t.value=v.status||'';askPago({o:b,v});return}
-  const prev=v[t.dataset.f];v[t.dataset.f]=t.value;save();if(t.dataset.f==='status'&&prev==='pago'&&t.value!=='pago')unPago(b,v);
+  const prev=v[t.dataset.f];v[t.dataset.f]=t.value;save();if(t.dataset.f==='status'&&prev==='pago'&&t.value!=='pago')unPago(b,v);if(t.dataset.f==='valor'||t.dataset.f==='payDate')refreshRec(b.vids);
   const tr=t.closest('tr');if(tr){tr.classList.toggle('alert',lateV(v));tr.querySelector('.vid').innerHTML=idCell(v,+tr.querySelector('.vid').dataset.no)}
   if(t.dataset.f==='sched')syncPostTask(b,v);
   if(t.dataset.f==='status'){v.postedAt=isDone(v)?(v.postedAt||iso(new Date())):'';taskFromVid(b,v)}
@@ -1339,9 +1387,13 @@ document.addEventListener('change',async e=>{
 let sideT=null;
 function openSide(){clearTimeout(sideT);$('#side').classList.add('open');$('#scrim').classList.add('show')}
 function closeSide(){$('#side').classList.remove('open');$('#scrim').classList.remove('show')}
-$('#burger').addEventListener('mouseenter',openSide);
-$('#side').addEventListener('mouseenter',()=>clearTimeout(sideT));
-$('#side').addEventListener('mouseleave',()=>{sideT=setTimeout(closeSide,200)});
+const HOV=matchMedia('(hover:hover) and (pointer:fine)').matches;
+if(HOV){
+  $('#burger').addEventListener('mouseenter',openSide);
+  $('#side').addEventListener('mouseenter',()=>clearTimeout(sideT));
+  $('#side').addEventListener('mouseleave',()=>{sideT=setTimeout(closeSide,200)});
+}
+$('#burger').addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')openSide()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSide();if(!$('#timer').hidden&&!document.querySelector('dialog[open]'))hideTimer()}});
 async function boot(){
   applyTheme();
