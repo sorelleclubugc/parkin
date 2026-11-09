@@ -178,6 +178,7 @@ input[type=color]{width:36px;height:36px;padding:2px;border:1px solid var(--line
 .bk{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--sc);border-radius:12px;padding:10px 12px}
 .bk .bnw{flex:1 1 160px;min-width:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .bk .bnw .bn{flex:0 1 auto}
+.bk .bnw .badge{margin-left:auto}
 .bk.off .bn,.bk.off .bs,.bk.off .days,.bk.off .meta{opacity:.6}
 .tagx{border:1px solid var(--danger);color:var(--danger);border-radius:99px;padding:2px 10px;font-size:11px;font-weight:600;white-space:nowrap}
 .bk .bn{flex:1 1 160px;min-width:0;margin:0;font-weight:600;font-size:16px;border:1px solid transparent;background:none;text-align:left;padding:8px 6px;color:var(--ink)}
@@ -402,9 +403,14 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
       <label>Horário (opcional)<input type="time" id="fTime"></label>
     </div>
     <label>Tempo da tarefa (ex.: 45, 1h30, 2h)<input type="text" id="fDur" autocomplete="off" value="25"></label>
+    <div id="tRecWrap" style="margin-bottom:10px">
+      <label class="chk" style="margin-bottom:8px"><input type="checkbox" id="tRec"> Tarefa recorrente</label>
+      <label id="tRecBox" hidden>Repetir<select id="tRecK"></select></label>
+    </div>
     <p class="err" id="err" role="alert"></p>
     <div class="actions">
       <button type="button" class="btn danger" id="del" hidden>Excluir</button>
+      <button type="button" class="btn" id="fEndRec" hidden>Encerrar recorrência</button>
       <button type="button" class="btn" id="cancel">Cancelar</button>
       <button type="submit" class="btn primary">Salvar</button>
     </div>
@@ -468,6 +474,12 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
   </form>
 </dialog>
 
+<dialog id="rdlg">
+  <h2>Renovar recorrência</h2>
+  <p class="sub" id="rSub"></p>
+  <div class="actions"><button type="button" class="btn" id="rNo">Não renovar</button><button type="button" class="btn primary" id="rYes">Renovar por 30 dias</button></div>
+</dialog>
+
 <dialog id="tdlg">
   <form id="tform" method="dialog">
     <h2>Vídeos do teste</h2>
@@ -509,7 +521,7 @@ const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 let S={cats:[{id:'c1',name:'Trabalho',color:PAL[0]},{id:'c2',name:'Estudo',color:PAL[4]},{id:'c3',name:'Casa',color:PAL[2]},{id:'c4',name:'Saúde',color:PAL[1]}],tasks:[],theme:null};
 const S0=JSON.stringify(S);
 let KEY='parkin:v2';
-const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];S.fin=S.fin||[];S.fcats=S.fcats||{in:['Canvas UGC','Afiliados','UGC Comum','Influencer','Outros'],out:['Moradia','Alimentação','Transporte','Assinaturas','Impostos','Outros']};S.goals=S.goals||{};migrateArch();fixIds();backfillL()};norm();
+const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];S.fin=S.fin||[];S.fcats=S.fcats||{in:['Canvas UGC','Afiliados','UGC Comum','Influencer','Outros'],out:['Moradia','Alimentação','Transporte','Assinaturas','Impostos','Outros']};S.goals=S.goals||{};S.recs=S.recs||[];migrateArch();fixIds();backfillL();fillRecs()};norm();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}queueSync()};
 const cat=id=>S.cats.find(c=>c.id===id)||{name:'Sem categoria',color:'#8A93A8'};
 const byId=id=>S.tasks.find(t=>t.id===id);
@@ -588,7 +600,7 @@ function renderHoje(){
   const hab=`<section class="card"><div class="ct"><h2>Hábitos de hoje</h2><div style="display:flex;gap:8px;align-items:center"><span class="pill">${hd}/${H.length}</span><button class="btn" data-hman>Gerenciar</button></div></div>`
     +(H.length?`<div class="hrow">${H.map(h=>`<button class="hchip${hl[h.id]?' on':''}" data-h="${h.id}" data-hk="${h.id}" draggable="true" aria-pressed="${!!hl[h.id]}">${hl[h.id]?'✓':'○'} ${esc(h.name)}</button>`).join('')}</div>`:'<p class="sub" style="margin:6px 0 0">Nenhum hábito. Use Gerenciar para adicionar.</p>')+'</section>';
   const timed=L.filter(t=>t.time),free=L.filter(t=>!t.time),hrs=timed.map(t=>+t.time.slice(0,2)),h0=Math.min(7,...hrs),h1=Math.max(21,...hrs);
-  const tcard=(t,dr)=>`<div class="tc${t.done?' done':''}"${dr?` data-hdt="${t.id}" draggable="true"`:''} style="border-left:3px solid ${cat(t.cat).color}">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(t.name)}</b><span>${esc(cat(t.cat).name)}${t.time?` · ${t.time}–${endT(t)}`:''}</span></button><span class="meta">${fmt(t.dur*60)}</span>${xBtn(t)}</div>`;
+  const tcard=(t,dr)=>`<div class="tc${t.done?' done':''}"${dr?` data-hdt="${t.id}" draggable="true"`:''} style="border-left:3px solid ${cat(t.cat).color}">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(t.name)}</b><span>${esc(cat(t.cat).name)}${t.rid?' ↻':''}${t.time?` · ${t.time}–${endT(t)}`:''}</span></button><span class="meta">${fmt(t.dur*60)}</span>${xBtn(t)}</div>`;
   let rows='';
   for(let h=h0;h<=h1;h++)rows+=`<div class="ag${dayOff===0&&now.getHours()===h?' cur':''}" data-hh="${pad(h)}"><span class="hr">${pad(h)}:00</span><div class="slot">${timed.filter(t=>+t.time.slice(0,2)===h).map(t=>tcard(t,true)).join('')}</div></div>`;
   const left=`<section class="card"><div class="ct"><h2>Meu dia</h2><div style="display:flex;align-items:center;gap:6px"><button class="btn icon" data-dayn="-1" aria-label="Dia anterior">‹</button><span class="pill">${d}/${L.length}</span><button class="btn icon" data-dayn="1" aria-label="Próximo dia">›</button></div></div><p class="sub">${({'-1':'Ontem · ','0':'Hoje · ','1':'Amanhã · '})[dayOff]||''}${parse(vk).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})} · ${fmt(plan*60)} planejadas</p>`
@@ -599,7 +611,7 @@ function renderHoje(){
   const right=`<div class="rcol"><section class="card"><div class="ct"><h2>Próximos</h2><span class="pill">${NX.length}</span></div><p class="sub" style="font-size:13px">Vídeos com data necessária hoje ou nos próximos 3 dias que ainda não estão em Postar.</p>${NX.length?`<ul class="lts">${NX.map(nRow).join('')}</ul>`:'<p class="sub">Nenhum vídeo nos próximos 3 dias.</p>'}</section></div>`;
   const notes=`<section class="card nbox"><div class="ct"><h2>Notas</h2></div><textarea id="notes" placeholder="Anote o que quiser…">${esc(S.notes||'')}</textarea></section>`;
   $('#p-hoje').innerHTML=`<div class="top2">${notes}${hab}</div><div class="grid2">${left}${right}</div>`;
-  maybeSunday();
+  maybeSunday();maybeRenew();
 }
 function drawH(){
   $('#hList').innerHTML=(S.habits||[]).map(h=>`<div class="crow" data-hk="${h.id}"><input type="text" value="${esc(h.name)}" data-hid="${h.id}" maxlength="40" aria-label="Nome do hábito"><button type="button" class="btn icon" data-hdel="${h.id}" aria-label="Excluir hábito">×</button></div>`).join('')||'<p class="sub">Nenhum hábito ainda.</p>';
@@ -622,7 +634,7 @@ function renderBacklog(){
     +(L.length?'<div class="bkg">'+Object.keys(g).map(c=>`<section class="card" style="margin-bottom:10px"><div class="ct"><h2 style="display:flex;align-items:center;gap:8px"><i class="dot" style="background:${cat(c).color}"></i>${esc(cat(c).name)}</h2><span class="meta">${g[c].length}</span></div><ul class="lts">${g[c].map(t=>`<li class="lt bkrow${t.done?' done':''}" data-bkt="${t.id}" draggable="true"><button class="main" data-bke="${t.id}"><b>${esc(t.name)}</b></button></li>`).join('')}</ul></section>`).join('')+'</div>':'<div class="empty">Backlog vazio.</div>');
 }
 const vlSum=A=>{const n=k=>A.filter(v=>v.status===k).length;return `<div class="sq2">${sqc({l:'Para roteirizar',v:n('roteiro'),c:VIO,i:'pen'})}${sqc({l:'Para gravar',v:n('gravacao'),c:ROSE,i:'cam'})}${sqc({l:'Para editar',v:n('edicao'),c:BLU,i:'cut'})}${sqc({l:'Prontos',v:n('post'),c:GRN,i:'ok'})}${recSq(recStats(A))}</div>`};
-let dayK=iso(new Date());setInterval(()=>{const k=iso(new Date());if(k!==dayK){dayK=k;dayOff=0;if(U)render()}},60000);
+let dayK=iso(new Date());setInterval(()=>{const k=iso(new Date());if(k!==dayK){dayK=k;dayOff=0;if(U){if(fillRecs())save();render()}}},60000);
 const ST={aplicar:['Aplicar','#8A93A8'],contas:['Contas','#D98A06'],teste:['Teste','#7B4FD6'],ativa:['Ativa','#15935B'],desligado:['Desligado','#C2410C']};
 let lastDay=null,ugcMsg='';
 const SECS={ugc:{key:'brands',el:'#p-ugc',title:'Canvas UGC',cat:'Canvas UGC',color:'#D6336C'},afil:{key:'afil',el:'#p-afil',title:'Afiliados',cat:'Afiliados',color:'#0E9AA7'}};
@@ -884,6 +896,8 @@ document.addEventListener('touchend',e=>{
   if(i<0||j<0)return;const[x]=A.splice(i,1);A.splice(j,0,x);save();render();
 });
 document.addEventListener('touchcancel',()=>{if(tb){clearTimeout(tb.timer);tb.li.classList.remove('lifting');tb=null;brOver()}});
+$('#rYes').onclick=()=>{const r=renewCur;if(!r)return;const t0=iso(today());r.until=iso(addD(parse(r.until>t0?r.until:t0),30));r.asked='';fillRecs();save();$('#rdlg').close();renewCur=null;render()};
+$('#rNo').onclick=()=>{const r=renewCur;if(r)r.asked=r.until;save();$('#rdlg').close();renewCur=null};
 let dragV=null;
 function moveVid(d,toId){
   const mv=A=>{const i=A.findIndex(v=>v.id===d.id),j=A.findIndex(v=>v.id===toId);if(i<0||j<0||i===j)return;const[x]=A.splice(i,1);A.splice(j,0,x)};
@@ -1103,6 +1117,47 @@ function parseDur(v){
   return 0;
 }
 const durTxt=m=>m<60?String(m):`${Math.floor(m/60)}h${m%60?pad(m%60):''}`;
+/* ---- tarefas recorrentes ---- */
+function recDates(r,from,to){
+  const out=[];
+  if(r.kind==='month'){for(let i=0;i<240;i++){const ds=addMon(r.start,i);if(ds>to)break;if(ds>=from)out.push(ds)}}
+  else{const step=r.kind==='week'?7:15;for(let d=parse(r.start);iso(d)<=to;d=addD(d,step)){if(iso(d)>=from)out.push(iso(d))}}
+  return out;
+}
+function fillRecs(){
+  const t0=iso(today());let n=0;
+  (S.recs||[]).forEach(r=>{
+    if(!r.until){const last=S.tasks.filter(t=>t.rid===r.id).map(t=>t.date).sort().pop()||r.start,m30=iso(addD(today(),30));r.until=last>m30?last:m30}
+    recDates(r,r.start>t0?r.start:t0,r.until).forEach(ds=>{
+      if((r.skip||[]).includes(ds)||S.tasks.some(t=>t.rid===r.id&&t.date===ds))return;
+      S.tasks.push({id:uid(),name:r.name,cat:r.cat,date:ds,time:r.time||'',dur:r.dur,desc:r.desc||'',done:false,spent:0,doneDate:'',rid:r.id});n++;
+    });
+  });
+  return n;
+}
+const REC_W=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+function recLabel(r){const d=parse(r.start),g=d.getDay();return r.kind==='week'?`${g===0||g===6?'todo':'toda'} ${REC_W[g]}`:r.kind==='month'?`todo dia ${pad(d.getDate())}`:'a cada 15 dias'}
+let renewCur=null;const renewSeen=new Set();
+function maybeRenew(){
+  if(document.querySelector('dialog[open]'))return;
+  const lim=iso(addD(today(),2));
+  const lastOf=r=>{const ds=recDates(r,r.start,r.until);return ds[ds.length-1]};
+  const r=(S.recs||[]).find(r=>!renewSeen.has(r.id)&&r.asked!==r.until&&lastOf(r)&&lastOf(r)<=lim);
+  if(!r)return;
+  renewSeen.add(r.id);renewCur=r;
+  $('#rSub').textContent=`“${r.name}” (${recLabel(r)}) tem a última repetição em ${fdt(lastOf(r))}. Renovar por mais 30 dias?`;
+  $('#rdlg').showModal();
+}
+function delTask(t){
+  if(t.rid){const r=(S.recs||[]).find(x=>x.id===t.rid);if(r){r.skip=r.skip||[];if(!r.skip.includes(t.date))r.skip.push(t.date)}}
+  S.tasks=S.tasks.filter(x=>x!==t);
+}
+function recLabels(){
+  const ds=$('#fDate').value;if(!ds)return;
+  const d=parse(ds),W=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'],g=d.getDay(),prev=$('#tRecK').value||'week';
+  $('#tRecK').innerHTML=`<option value="week">${g===0||g===6?'Todo':'Toda'} ${W[g]}</option><option value="month">Todo dia ${pad(d.getDate())}</option><option value="15d">A cada 15 dias</option>`;
+  $('#tRecK').value=prev;
+}
 function openTask(t,date,time){
   editing=t||null;
   $('#dTitle').textContent=t?'Editar tarefa':'Nova tarefa';
@@ -1113,6 +1168,7 @@ function openTask(t,date,time){
   $('#fDate').value=t?t.date:date;
   $('#fTime').value=t?t.time:(time||'');
   $('#fDur').value=t?durTxt(t.dur):'25';
+  $('#tRec').checked=false;$('#tRecBox').hidden=true;$('#tRecWrap').hidden=!!t;$('#fEndRec').hidden=!(t&&t.rid);recLabels();
   $('#dlg').showModal();$('#fName').focus();
 }
 $('#form').addEventListener('submit',e=>{
@@ -1123,11 +1179,19 @@ $('#form').addEventListener('submit',e=>{
   if(!dur||dur<1||dur>1440)return err('Tempo inválido. Use, por exemplo, 45, 1h30 ou 2h (máximo 24h).');
   const d={name,cat:$('#fCat').value,date,time:$('#fTime').value,dur};
   if(!(editing&&isVidTask(editing)))d.desc=$('#fDesc').value.trim();
-  if(editing)Object.assign(editing,d);else S.tasks.push({id:uid(),...d,done:false,spent:0,doneDate:''});
+  if(editing)Object.assign(editing,d);
+  else if($('#tRec').checked){
+    if(!date)return err('Escolha uma data para repetir a tarefa.');
+    const t0=iso(today()),r={id:uid(),kind:$('#tRecK').value,start:date,name:d.name,cat:d.cat,time:d.time,dur:d.dur,desc:d.desc||'',skip:[],until:iso(addD(parse(date>t0?date:t0),30))};
+    S.recs.push(r);S.tasks.push({id:uid(),...d,done:false,spent:0,doneDate:'',rid:r.id});fillRecs();
+  }else S.tasks.push({id:uid(),...d,done:false,spent:0,doneDate:''});
   save();$('#dlg').close();if(date)pCur=parse(date);render();if(!$('#timer').hidden)drawTimer();
 });
 $('#cancel').onclick=()=>$('#dlg').close();
-$('#del').onclick=()=>{S.tasks=S.tasks.filter(t=>t!==editing);save();$('#dlg').close();render();if(!$('#timer').hidden)drawTimer()};
+$('#tRec').onchange=()=>{$('#tRecBox').hidden=!$('#tRec').checked;recLabels()};
+$('#fDate').addEventListener('input',recLabels);
+$('#fEndRec').onclick=()=>{if(!editing||!editing.rid)return;const id=editing.rid,d=editing.date;S.recs=S.recs.filter(r=>r.id!==id);S.tasks=S.tasks.filter(t=>t.rid!==id||t.done||t.date<=d);save();$('#dlg').close();render()};
+$('#del').onclick=()=>{delTask(editing);save();$('#dlg').close();render();if(!$('#timer').hidden)drawTimer()};
 $('#add').onclick=()=>openTask(null,iso(pCur));
 
 /* categorias */
@@ -1200,7 +1264,7 @@ $('#timer').addEventListener('click',e=>{
   else if(a==='more'){T.rem=T.total=300000;T.end=false;T.run=true;T.last=Date.now();drawTimer()}
   else if(a==='edit')openTask(t);
   else if(a==='reopen'){toggle(t)}
-  else if(a==='del'){if(!T.del){T.del=true;drawTimer()}else{S.tasks=S.tasks.filter(x=>x!==t);save();closeTimer()}}
+  else if(a==='del'){if(!T.del){T.del=true;drawTimer()}else{delTask(t);save();closeTimer()}}
   else if(a==='cat'){const d=taskDest(t);if(d){hideTimer();tab=d.tab;if(d.open)OPEN[d.tab]=d.open;render();scrollXp()}}
   else if(a==='more-custom'){$('#mErr').textContent='';$('#mN').value='10';$('#mdlg').showModal();$('#mN').focus();$('#mN').select()}
   else if(a==='cl-add'){t.cl=t.cl||[];if(t.cl.length<5){t.cl.push({txt:'',done:false});save();drawTimer();setTimeout(()=>{const l=$$('#timer [data-clt]').pop();if(l)l.focus()},0)}}
@@ -1253,7 +1317,7 @@ document.addEventListener('click',e=>{
   if(q('#aYes')||q('#aNo')){answerAsk(!!q('#aYes'));return}
   if(x=q('#cAdd')){const k=x.dataset.k||'comum',C=VLC[k];S[C.arr].push({id:++S[C.seq],head:'',status:'',idea:'',need:'',sched:''});fixL(C.arr,C.seq);save();return renderVL(k)}
   if(x=q('[data-cdel]')){const k=x.dataset.k||'comum',C=VLC[k];S.tasks=S.tasks.filter(t=>t.src!=='lst:'+k+':'+x.dataset.cdel||t.done);S[C.arr]=S[C.arr].filter(v=>v.id!==+x.dataset.cdel);renumList(C.arr,C.seq);save();return renderVL(k)}
-  if(x=q('[data-tdel]')){const id=x.dataset.tdel;if(delArm===id){S.tasks=S.tasks.filter(t=>t.id!==id);delArm=null;save()}else delArm=id;return render()}
+  if(x=q('[data-tdel]')){const id=x.dataset.tdel;if(delArm===id){const dt=byId(id);if(dt)delTask(dt);delArm=null;save()}else delArm=id;return render()}
   if(q('#vAdd')){const b=BR().find(y=>y.id===OPEN[curTab()]);b.vids.push({id:++b.seq,head:'',tipo:'',status:'',idea:'',need:'',sched:''});fixB(b);save();return renderUgc()}
   if(x=q('[data-vdel]')){const b=BR().find(y=>y.id===OPEN[curTab()]);renumBrand(b,()=>{b.vids=b.vids.filter(v=>v.id!==+x.dataset.vdel);S.tasks=S.tasks.filter(t=>t.src!=='vid:'+b.id+':'+x.dataset.vdel||t.done)});save();return renderUgc()}
   if(x=q('[data-h]')){const k=iso(new Date()),l=S.hlog[k]=S.hlog[k]||{};if(l[x.dataset.h])delete l[x.dataset.h];else l[x.dataset.h]=true;save();return render()}
