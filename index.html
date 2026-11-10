@@ -208,6 +208,15 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
+.chip[draggable=true]{cursor:grab}
+.ptag{border:1px solid currentColor;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:600;white-space:nowrap}
+.ptag.max,.pchip.max{color:var(--danger)}
+.ptag.med,.pchip.med{color:#C99700}
+.t-prio{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px;font-size:13px}
+.pchip{border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted)}
+.pchip.max,.pchip.med{border-color:currentColor}
+.pchip.on{background:color-mix(in srgb,currentColor 16%,transparent);border-color:currentColor;color:var(--ink)}
+.pchip.max.on{color:var(--danger)}.pchip.med.on{color:#C99700}
 .stw .sti,.stw .sti option{font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;font-weight:400;line-height:1.4}
 .xp-li{list-style:none}
 .xp{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:14px;padding:14px 16px;margin:0 0 8px 14px}
@@ -540,7 +549,11 @@ $('#theme').onclick=()=>{S.theme=document.documentElement.dataset.theme==='dark'
 
 /* tarefas */
 const isVidTask=t=>/^(vid|lst):/.test(t.src||'');
-function descOf(t){if(isVidTask(t)){const r=findVid(t.src);return r?(r.v.head||''):''}return t.desc||''}
+function descOf(t){return t.desc||''}
+const headOf=t=>{if(!isVidTask(t))return '';const r=findVid(t.src);return r?(r.v.head||''):''};
+const tname=t=>t.name+(headOf(t)?' - '+headOf(t):'');
+const ptag=t=>t.prio?`<span class="ptag ${t.prio}">${t.prio==='max'?'máxima':'média'}</span>`:'';
+function skipDate(t){if(t.rid){const r=(S.recs||[]).find(x=>x.id===t.rid);if(r){r.skip=r.skip||[];if(!r.skip.includes(t.date))r.skip.push(t.date)}}}
 function taskDest(t){
   const src=t.src||'';let m=/^vid:([^:]+):\d+$/.exec(src)||/^ugc:(.+)$/.exec(src);
   if(m){for(const[tb,key]of[['ugc','brands'],['afil','afil']]){const b=(S[key]||[]).find(x=>x.id===m[1]);if(b)return{tab:tb,open:b.id}}}
@@ -600,7 +613,7 @@ function renderHoje(){
   const hab=`<section class="card"><div class="ct"><h2>Hábitos de hoje</h2><div style="display:flex;gap:8px;align-items:center"><span class="pill">${hd}/${H.length}</span><button class="btn" data-hman>Gerenciar</button></div></div>`
     +(H.length?`<div class="hrow">${H.map(h=>`<button class="hchip${hl[h.id]?' on':''}" data-h="${h.id}" data-hk="${h.id}" draggable="true" aria-pressed="${!!hl[h.id]}">${hl[h.id]?'✓':'○'} ${esc(h.name)}</button>`).join('')}</div>`:'<p class="sub" style="margin:6px 0 0">Nenhum hábito. Use Gerenciar para adicionar.</p>')+'</section>';
   const timed=L.filter(t=>t.time),free=L.filter(t=>!t.time),hrs=timed.map(t=>+t.time.slice(0,2)),h0=Math.min(7,...hrs),h1=Math.max(21,...hrs);
-  const tcard=(t,dr)=>`<div class="tc${t.done?' done':''}"${dr?` data-hdt="${t.id}" draggable="true"`:''} style="border-left:3px solid ${cat(t.cat).color}">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(t.name)}</b><span>${esc(cat(t.cat).name)}${t.rid?' ↻':''}${t.time?` · ${t.time}–${endT(t)}`:''}</span></button><span class="meta">${fmt(t.dur*60)}</span>${xBtn(t)}</div>`;
+  const tcard=(t,dr)=>`<div class="tc${t.done?' done':''}"${dr?` data-hdt="${t.id}" draggable="true"`:''} style="border-left:3px solid ${cat(t.cat).color}">${ckBtn(t)}<button class="main" data-id="${t.id}"><b>${esc(tname(t))}</b><span>${esc(cat(t.cat).name)}${t.rid?' ↻':''}${t.time?` · ${t.time}–${endT(t)}`:''}</span></button>${ptag(t)}<span class="meta">${fmt(t.dur*60)}</span>${xBtn(t)}</div>`;
   let rows='';
   for(let h=h0;h<=h1;h++)rows+=`<div class="ag${dayOff===0&&now.getHours()===h?' cur':''}" data-hh="${pad(h)}"><span class="hr">${pad(h)}:00</span><div class="slot">${timed.filter(t=>+t.time.slice(0,2)===h).map(t=>tcard(t,true)).join('')}</div></div>`;
   const left=`<section class="card"><div class="ct"><h2>Meu dia</h2><div style="display:flex;align-items:center;gap:6px"><button class="btn icon" data-dayn="-1" aria-label="Dia anterior">‹</button><span class="pill">${d}/${L.length}</span><button class="btn icon" data-dayn="1" aria-label="Próximo dia">›</button></div></div><p class="sub">${({'-1':'Ontem · ','0':'Hoje · ','1':'Amanhã · '})[dayOff]||''}${parse(vk).toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})} · ${fmt(plan*60)} planejadas</p>`
@@ -809,7 +822,7 @@ document.addEventListener('dragover',e=>{
 document.addEventListener('drop',e=>{
   if(!dragT)return;const c=dropCell(e);if(!c)return;
   e.preventDefault();const t=byId(dragT);dragT=null;if(!t)return;
-  t.date=c.dataset.date||c.dataset.dd;
+  skipDate(t);t.date=c.dataset.date||c.dataset.dd;
   save();render();
 });
 document.addEventListener('dragend',()=>{dragT=null;$$('.dropt').forEach(x=>x.classList.remove('dropt'))});
@@ -1082,7 +1095,7 @@ function renderPlano(){
     for(let i=0;i<42;i++){
       const d=addD(st,i),k=iso(d),L=tasksOn(k);
       h+=`<div class="day${d.getMonth()!==pCur.getMonth()?' out':''}${k===k0?' today':''}" data-date="${k}"><span class="num">${d.getDate()}</span>`;
-      L.slice(0,3).forEach(t=>{h+=`<div class="chip${t.done?' done':''}" style="--c:${cat(t.cat).color}">${ckBtn(t)}<button class="nm" data-id="${t.id}">${t.time?`<b>${t.time}</b>`:''}${esc(t.name)}</button></div>`});
+      L.slice(0,3).forEach(t=>{h+=`<div class="chip${t.done?' done':''}" data-bkt="${t.id}" draggable="true" style="--c:${cat(t.cat).color}">${ckBtn(t)}<button class="nm" data-id="${t.id}">${t.time?`<b>${t.time}</b>`:''}${esc(tname(t))}</button></div>`});
       if(L.length>3)h+=`<span class="more">+${L.length-3} mais</span>`;
       h+='</div>';
     }
@@ -1094,7 +1107,7 @@ function renderPlano(){
     for(let i=0;i<7;i++){
       const d=addD(ws,i),k=iso(d),L=tasksOn(k);
       cols+=`<div class="wd${k===k0?' today':''}" data-dd="${k}"><div class="wh">${DOW[d.getDay()]}<span>${d.getDate()}</span></div>`
-        +L.map(t=>`<div class="chip wc${t.done?' done':''}" style="--c:${cat(t.cat).color}">${ckBtn(t)}<button class="nm" data-id="${t.id}">${t.time?`<b>${t.time}</b> `:''}${esc(t.name)}<small>${fmt(t.dur*60)}</small></button></div>`).join('')+'</div>';
+        +L.map(t=>`<div class="chip wc${t.done?' done':''}" data-bkt="${t.id}" draggable="true" style="--c:${cat(t.cat).color}">${ckBtn(t)}<button class="nm" data-id="${t.id}">${t.time?`<b>${t.time}</b> `:''}${esc(tname(t))}<small>${fmt(t.dur*60)}</small></button></div>`).join('')+'</div>';
     }
     h=`<div class="wk7">${cols}</div>`;
   }
@@ -1148,10 +1161,7 @@ function maybeRenew(){
   $('#rSub').textContent=`“${r.name}” (${recLabel(r)}) tem a última repetição em ${fdt(lastOf(r))}. Renovar por mais 30 dias?`;
   $('#rdlg').showModal();
 }
-function delTask(t){
-  if(t.rid){const r=(S.recs||[]).find(x=>x.id===t.rid);if(r){r.skip=r.skip||[];if(!r.skip.includes(t.date))r.skip.push(t.date)}}
-  S.tasks=S.tasks.filter(x=>x!==t);
-}
+function delTask(t){skipDate(t);S.tasks=S.tasks.filter(x=>x!==t)}
 function recLabels(){
   const ds=$('#fDate').value;if(!ds)return;
   const d=parse(ds),W=['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'],g=d.getDay(),prev=$('#tRecK').value||'week';
@@ -1164,7 +1174,7 @@ function openTask(t,date,time){
   $('#del').hidden=!t;$('#err').textContent='';
   fillCats(t?t.cat:'');
   $('#fName').value=t?t.name:'';
-  const au=!!(t&&isVidTask(t));$('#fDesc').disabled=au;$('#fDesc').value=t?descOf(t):'';$('#fDesc').placeholder=au?'Vem da headline do vídeo':'Uma linha sobre a tarefa';
+  $('#fDesc').disabled=false;$('#fDesc').value=t?descOf(t):'';$('#fDesc').placeholder='Uma linha sobre a tarefa';
   $('#fDate').value=t?t.date:date;
   $('#fTime').value=t?t.time:(time||'');
   $('#fDur').value=t?durTxt(t.dur):'25';
@@ -1178,8 +1188,8 @@ $('#form').addEventListener('submit',e=>{
   if(!name)return err('Dê um nome à tarefa.');
   if(!dur||dur<1||dur>1440)return err('Tempo inválido. Use, por exemplo, 45, 1h30 ou 2h (máximo 24h).');
   const d={name,cat:$('#fCat').value,date,time:$('#fTime').value,dur};
-  if(!(editing&&isVidTask(editing)))d.desc=$('#fDesc').value.trim();
-  if(editing)Object.assign(editing,d);
+  d.desc=$('#fDesc').value.trim();
+  if(editing){if(editing.rid&&editing.date!==date)skipDate(editing);Object.assign(editing,d)}
   else if($('#tRec').checked){
     if(!date)return err('Escolha uma data para repetir a tarefa.');
     const t0=iso(today()),r={id:uid(),kind:$('#tRecK').value,start:date,name:d.name,cat:d.cat,time:d.time,dur:d.dur,desc:d.desc||'',skip:[],until:iso(addD(parse(date>t0?date:t0),30))};
@@ -1252,7 +1262,7 @@ function drawTimer(){
   if(t.done)a=`<p>Concluída · ${fmt(t.spent)} registrados</p><button class="btn primary" data-a="reopen">Reabrir</button><button class="btn" data-a="edit">Editar</button>`;
   else if(T.end)a=`<p>O tempo acabou. Você terminou?</p><button class="btn primary" data-a="fin">Terminei</button><button class="btn" data-a="more">+5 min</button><button class="btn" data-a="more-custom">Mais tempo…</button>`;
   else a=`<button class="btn primary" data-a="run">${T.run?'Pausar':T.el?'Continuar':'Começar'}</button><button class="btn" data-a="fin">Concluir</button><button class="btn" data-a="edit">Editar</button>`;
-  $('#timer').innerHTML=`<div class="t-in${cl.length?' t-wide':''}"><button class="t-x" data-a="x" aria-label="Fechar">✕</button><p class="t-cat"${taskDest(t)?' data-a="cat" role="button" title="Ir para a aba"':''}><i class="dot" style="background:${cat(t.cat).color}"></i>${esc(cat(t.cat).name)}</p><h2>${esc(t.name)}</h2>${descOf(t)?`<p class="t-desc">${esc(descOf(t))}</p>`:''}${cl.length?'':'<p class="t-linkrow"><span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar checklist</span></p>'}<div class="t-body"><div class="t-left"><div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle class="bg" cx="120" cy="120" r="104"/><circle class="fg" id="tRing" cx="120" cy="120" r="104"/></svg><div class="clock" id="tClock" role="timer"></div></div><div class="t-act">${a}</div></div>${clHtml}</div><div class="t-act" style="margin-top:14px"><button class="btn danger" style="margin:0" data-a="del">${T.del?'Confirmar exclusão':'Excluir tarefa'}</button></div></div>`;
+  $('#timer').innerHTML=`<div class="t-in${cl.length?' t-wide':''}"><button class="t-x" data-a="x" aria-label="Fechar">✕</button><p class="t-cat"${taskDest(t)?' data-a="cat" role="button" title="Ir para a aba"':''}><i class="dot" style="background:${cat(t.cat).color}"></i>${esc(cat(t.cat).name)}</p><h2>${esc(tname(t))}</h2>${descOf(t)?`<p class="t-desc">${esc(descOf(t))}</p>`:''}<div class="t-prio"><span class="muted">Prioridade</span>${[['','nenhuma'],['med','média'],['max','máxima']].map(([k,l])=>`<span class="pchip ${k}${(t.prio||'')===k?' on':''}" data-a="prio" data-p="${k}" role="button">${l}</span>`).join('')}</div>${cl.length?'':'<p class="t-linkrow"><span class="t-link" data-a="cl-add" role="button" tabindex="0">+ adicionar checklist</span></p>'}<div class="t-body"><div class="t-left"><div class="ring"><svg viewBox="0 0 240 240" aria-hidden="true"><circle class="bg" cx="120" cy="120" r="104"/><circle class="fg" id="tRing" cx="120" cy="120" r="104"/></svg><div class="clock" id="tClock" role="timer"></div></div><div class="t-act">${a}</div></div>${clHtml}</div><div class="t-act" style="margin-top:14px"><button class="btn danger" style="margin:0" data-a="del">${T.del?'Confirmar exclusão':'Excluir tarefa'}</button></div></div>`;
   paintClock();
 }
 $('#timer').addEventListener('click',e=>{
@@ -1265,6 +1275,7 @@ $('#timer').addEventListener('click',e=>{
   else if(a==='edit')openTask(t);
   else if(a==='reopen'){toggle(t)}
   else if(a==='del'){if(!T.del){T.del=true;drawTimer()}else{delTask(t);save();closeTimer()}}
+  else if(a==='prio'){t.prio=b.dataset.p||'';save();drawTimer()}
   else if(a==='cat'){const d=taskDest(t);if(d){hideTimer();tab=d.tab;if(d.open)OPEN[d.tab]=d.open;render();scrollXp()}}
   else if(a==='more-custom'){$('#mErr').textContent='';$('#mN').value='10';$('#mdlg').showModal();$('#mN').focus();$('#mN').select()}
   else if(a==='cl-add'){t.cl=t.cl||[];if(t.cl.length<5){t.cl.push({txt:'',done:false});save();drawTimer();setTimeout(()=>{const l=$$('#timer [data-clt]').pop();if(l)l.focus()},0)}}
