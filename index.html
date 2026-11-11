@@ -201,6 +201,33 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
+#wdlg,#ldlg{width:min(560px,calc(100% - 32px))}
+.wdiv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.wrows{max-height:46vh;overflow:auto;margin-bottom:10px}
+.wrow{display:grid;grid-template-columns:minmax(0,1fr) 72px 84px 40px;gap:6px;margin-bottom:6px;align-items:center}
+.wrow input{margin:0}
+.tclock{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.tclock b{font-size:30px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;min-width:140px}
+.tbar{flex:1;min-width:120px;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.ttw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.tt{width:100%;border-collapse:collapse}
+.tt th{text-align:left;font-size:12px;color:var(--muted);padding:10px 8px;font-weight:600}
+.tt td{padding:6px 8px;border-top:1px solid var(--line)}
+.tt tr.done td:first-child{text-decoration:line-through;opacity:.55}
+.tt input.kg{width:84px;margin:0}
+.tckb{width:26px;height:26px;border-radius:50%;border:2px solid var(--muted);background:none;padding:0;position:relative}
+.tckb.on{background:var(--accent);border-color:var(--accent)}
+.tckb.on::after{content:"";position:absolute;left:8px;top:3px;width:5px;height:10px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.tagx.run{color:var(--at)}
+.tw.tl th:nth-child(2),.tw.tl td:nth-child(2){width:auto}
+.tw.tl td:last-child{width:auto;padding-left:8px}
+.tw.tl table{min-width:0}
+.tw tr[data-tl]{cursor:pointer}
+.tw tr[data-tl]:hover{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.confetti i{position:absolute;top:-16px;width:9px;height:14px;border-radius:2px;animation:cf linear forwards}
+@keyframes cf{to{transform:translateY(112vh) rotate(720deg)}}
 .dcard{margin-bottom:16px}
 .hscroll{overflow-x:auto;padding-bottom:4px}
 .ht{border-collapse:separate;border-spacing:3px;width:max-content;min-width:100%}
@@ -359,7 +386,7 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 <div class="shell" hidden>
 <aside class="side" id="side" aria-label="Menu">
   <div class="brand"><img class="lg-l" src="logo-claro.png" alt=""><img class="lg-d" src="logo-escuro.png" alt="">Parkin</div>
-  <nav class="nav" aria-label="Seções"><button class="tab" data-tab="hoje" aria-pressed="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Inicial</button><button class="tab" data-tab="plano" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Plano</button><button class="tab" data-tab="dados" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Dados</button><button class="tab" data-tab="ugc" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg>Canvas UGC</button><button class="tab" data-tab="comum" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>UGC Comum</button><button class="tab" data-tab="infl" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Influencer</button><button class="tab" data-tab="afil" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Afiliados</button><button class="tab" data-tab="fin" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14h2"/></svg>Finanças</button><button class="tab" data-tab="perfil" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Perfil</button></nav>
+  <nav class="nav" aria-label="Seções"><button class="tab" data-tab="hoje" aria-pressed="true"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Inicial</button><button class="tab" data-tab="plano" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Plano</button><button class="tab" data-tab="ugc" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/></svg>Canvas UGC</button><button class="tab" data-tab="comum" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>UGC Comum</button><button class="tab" data-tab="infl" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Influencer</button><button class="tab" data-tab="afil" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>Afiliados</button><button class="tab" data-tab="fin" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 14h2"/></svg>Finanças</button><button class="tab" data-tab="treino" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>Treinos</button><button class="tab" data-tab="perfil" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Perfil</button><button class="tab" data-tab="dados" aria-pressed="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Dados</button></nav>
   <button class="foot" id="theme" aria-label="Alternar tema claro e escuro"><span id="themeIc"></span><span id="themeTx"></span></button>
 </aside>
 <div class="scrim" id="scrim"></div>
@@ -401,6 +428,7 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
   <section class="panel" id="p-afil" hidden></section>
 
   <section class="panel" id="p-fin" hidden></section>
+  <section class="panel" id="p-treino" hidden></section>
   <section class="panel" id="p-perfil" hidden></section>
 </div>
 </div>
@@ -499,6 +527,13 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
   <div class="actions"><button type="button" class="btn" id="rNo">Não renovar</button><button type="button" class="btn primary" id="rYes">Renovar por 30 dias</button></div>
 </dialog>
 
+<dialog id="wdlg"><div id="wBody"></div></dialog>
+
+<dialog id="ldlg">
+  <div id="lBody"></div>
+  <div class="actions"><button type="button" class="btn primary" id="lClose">Fechar</button></div>
+</dialog>
+
 <dialog id="tdlg">
   <form id="tform" method="dialog">
     <h2>Vídeos do teste</h2>
@@ -540,7 +575,7 @@ const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 let S={cats:[{id:'c1',name:'Trabalho',color:PAL[0]},{id:'c2',name:'Estudo',color:PAL[4]},{id:'c3',name:'Casa',color:PAL[2]},{id:'c4',name:'Saúde',color:PAL[1]}],tasks:[],theme:null};
 const S0=JSON.stringify(S);
 let KEY='parkin:v2';
-const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];S.fin=S.fin||[];S.fcats=S.fcats||{in:['Canvas UGC','Afiliados','UGC Comum','Influencer','Outros'],out:['Moradia','Alimentação','Transporte','Assinaturas','Impostos','Outros']};S.goals=S.goals||{};S.recs=S.recs||[];migrateArch();fixIds();backfillL();fillRecs()};norm();
+const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];S.fin=S.fin||[];S.fcats=S.fcats||{in:['Canvas UGC','Afiliados','UGC Comum','Influencer','Outros'],out:['Moradia','Alimentação','Transporte','Assinaturas','Impostos','Outros']};S.goals=S.goals||{};S.recs=S.recs||[];S.trn=S.trn||null;S.trnLog=S.trnLog||[];S.trnRun=S.trnRun||null;migrateArch();fixIds();backfillL();fillRecs()};norm();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}queueSync()};
 const cat=id=>S.cats.find(c=>c.id===id)||{name:'Sem categoria',color:'#8A93A8'};
 const byId=id=>S.tasks.find(t=>t.id===id);
@@ -593,11 +628,11 @@ const ckBtn=t=>`<button class="ck${t.done?' on':''}" data-ck="${t.id}" aria-labe
 function render(){
   if(!$('#vdlg').open&&sweepAll())save();
   $$('.tab').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===tab));
-  ['hoje','plano','dados','ugc','comum','infl','afil','fin','perfil'].forEach(n=>$('#p-'+n).hidden=n!==tab);
+  ['hoje','plano','dados','ugc','comum','infl','afil','fin','treino','perfil'].forEach(n=>$('#p-'+n).hidden=n!==tab);
   $('#side').classList.remove('open');$('#scrim').classList.remove('show');
   paintAvatar();
   $('[data-tab=ugc]').classList.toggle('al',S.brands.some(b=>lateN(b)>0));$('[data-tab=afil]').classList.toggle('al',S.afil.some(b=>lateN(b)>0));$('[data-tab=infl]').classList.toggle('al',S.infl.some(lateV));$('[data-tab=comum]').classList.toggle('al',S.comum.some(lateV));
-  ({hoje:renderHoje,plano:renderPlano,dados:renderDados,ugc:renderUgc,comum:renderComum,infl:renderInfl,afil:renderUgc,fin:renderFin,perfil:renderPerfil})[tab]();
+  ({hoje:renderHoje,plano:renderPlano,dados:renderDados,ugc:renderUgc,comum:renderComum,infl:renderInfl,afil:renderUgc,fin:renderFin,treino:renderTrn,perfil:renderPerfil})[tab]();
 }
 
 let delArm=null;
@@ -1080,6 +1115,110 @@ function goalsHtml(){
   return `<section class="card" style="max-width:480px;margin-top:16px"><div class="ct"><h2>Metas financeiras</h2><div style="display:flex;align-items:center;gap:6px"><button class="btn icon" data-gy="-1" aria-label="Ano anterior">‹</button><b>${goalY}</b><button class="btn icon" data-gy="1" aria-label="Próximo ano">›</button></div></div><p class="sub" style="font-size:13px">Meta de ganhos de cada mês, em reais.</p>${M.map((m,i)=>{const k=goalY+'-'+pad(i+1);return `<div class="grow"><span>${m}</span><input type="number" step="0.01" min="0" data-goal="${k}" value="${S.goals[k]||''}" placeholder="0,00"></div>`}).join('')}</section>`;
 }
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.goal;if(!k)return;const n=parseFloat(e.target.value);if(n>0)S.goals[k]=n;else delete S.goals[k];save()});
+/* ============ TREINOS ============ */
+const LET='ABCDEFG'.split('');
+let wz=null,TOPEN=null,trnAsked=false;
+const wLabel=n=>LET.slice(0,n).join('-');
+const fmtClock=ms=>{const t=Math.floor(ms/1000);return pad(Math.floor(t/3600))+':'+pad(Math.floor(t%3600/60))+':'+pad(t%60)};
+const trnElapsed=L=>{const r=S.trnRun;return r&&r.day===L?r.acc+(r.start?Date.now()-r.start:0):0};
+setInterval(()=>{if(tab!=='treino'||!S.trnRun||!S.trnRun.start)return;const el=$('#tClockT');if(el&&TOPEN===S.trnRun.day)el.textContent=fmtClock(trnElapsed(S.trnRun.day))},500);
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const box=document.createElement('div');box.className='confetti';
+  const cols=['#22DDE6','#D98A06','#D6336C','#7B4FD6','#22A06B','#3B82F6'];
+  for(let i=0;i<90;i++){const q=document.createElement('i');q.style.cssText=`left:${Math.random()*100}%;background:${cols[i%6]};animation-delay:${Math.random()*.4}s;animation-duration:${1.8+Math.random()*1.4}s`;box.appendChild(q)}
+  document.body.appendChild(box);setTimeout(()=>box.remove(),3600);
+}
+function finishTrn(L){
+  const d=S.trn.days[LET.indexOf(L)],secs=Math.round(trnElapsed(L)/1000);
+  if(!secs&&!d.ex.some(e=>e.done))return;
+  S.trnLog.unshift({id:uid(),day:L,secs,date:iso(new Date()),ex:d.ex.map(e=>({name:e.name,sets:e.sets,reps:e.reps,kg:e.kg}))});
+  d.ex.forEach(e=>{e.done=false});
+  if(S.trnRun&&S.trnRun.day===L)S.trnRun=null;
+  save();confetti();renderTrn();
+}
+function trnAct(a){
+  const L=TOPEN;if(!L||!S.trn)return;
+  if(a==='run'){
+    const r=S.trnRun;if(r&&r.day!==L)return;
+    if(!r)S.trnRun={day:L,acc:0,start:Date.now()};
+    else if(r.start){r.acc+=Date.now()-r.start;r.start=0}else r.start=Date.now();
+    save();renderTrn();
+  }else if(a==='fin')finishTrn(L);
+}
+function trnPanel(L,d){
+  const run=S.trnRun,mine=run&&run.day===L,other=run&&run.day!==L,done=d.ex.filter(e=>e.done).length,pct=d.ex.length?Math.round(done/d.ex.length*100):0;
+  const btn=other?`<button class="btn" disabled>Treino ${run.day} em andamento</button>`:`<button class="btn primary" data-tg="run">${mine?(run.start?'Pausar':'Continuar'):'Iniciar treino'}</button>`;
+  const rows=d.ex.map(e=>`<tr class="${e.done?'done':''}"><td>${esc(e.name)}</td><td>${esc(e.sets)}</td><td>${esc(e.reps)}</td><td><input type="text" class="kg" inputmode="decimal" data-kg="${L}|${e.id}" value="${esc(e.kg||'')}" placeholder="kg"></td><td><button class="tckb${e.done?' on':''}" data-tck="${L}|${e.id}" aria-label="Concluir exercício"></button></td></tr>`).join('');
+  return `<div class="tclock"><b id="tClockT">${fmtClock(trnElapsed(L))}</b><div class="tbar" title="${done} de ${d.ex.length}"><i style="width:${pct}%"></i></div>${btn}<button class="btn" data-tg="fin">Finalizar</button></div><div class="ttw"><table class="tt"><thead><tr><th>Exercício</th><th>Séries</th><th>Reps</th><th>Peso (kg)</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function renderTrn(){
+  const el=$('#p-treino');
+  if(!S.trn){
+    el.innerHTML='<h1>Treinos</h1><div class="empty">Você ainda não criou o seu treino.<br><button class="btn primary" id="tNew">Criar treino</button></div>';
+    if(!trnAsked&&!document.querySelector('dialog[open]')){trnAsked=true;wzNew('new')}
+    return;
+  }
+  const rows=S.trn.days.map((d,i)=>{
+    const L=LET[i],open=TOPEN===L,run=S.trnRun&&S.trnRun.day===L;
+    return `<li class="bk tkrow${open?' open':''}" data-to="${L}" style="--sc:var(--accent)"><div class="bnw"><button class="bn" data-topen="${L}"><span class="car">${open?'▾':'▸'}</span> Treino ${L}</button>${run?'<span class="tagx run">em andamento</span>':''}</div><span class="meta">${d.ex.length} ${d.ex.length===1?'exercício':'exercícios'}</span></li>`
+      +(open?`<li class="xp-li"><div class="xp">${trnPanel(L,d)}</div></li>`:'');
+  }).join('');
+  el.innerHTML=`<h1>Treinos</h1><div class="tool"><button class="btn" id="tEdit">Editar treino</button><button class="btn" id="tRestart">Recomeçar</button></div><ul class="list">${rows}</ul>`;
+}
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset.kg===undefined||!S.trn)return;const[L,id]=el.dataset.kg.split('|'),x=S.trn.days[LET.indexOf(L)].ex.find(y=>y.id===id);if(x){x.kg=el.value;save()}});
+function trnLogHtml(){
+  const A=S.trnLog||[];
+  return `<section class="card dcard"><div class="ct"><h2>Treinos concluídos</h2><span class="sub" style="margin:0">${A.length} no total</span></div>`
+    +(A.length?`<div class="tw tl"><table><thead><tr><th>Treino</th><th>Tempo</th><th>Data</th></tr></thead><tbody>${A.slice(0,200).map(l=>`<tr data-tl="${l.id}"><td>Treino ${l.day}</td><td>${l.secs?fmt(l.secs):'—'}</td><td>${fdt(l.date)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhum treino concluído ainda.</div>')+'</section>';
+}
+function openTl(id){
+  const l=(S.trnLog||[]).find(x=>x.id===id);if(!l)return;
+  $('#lBody').innerHTML=`<h2>Treino ${l.day}</h2><p class="sub">${fdt(l.date)} · ${l.secs?fmtClock(l.secs*1000):'sem tempo'}</p><div class="ttw"><table class="tt"><thead><tr><th>Exercício</th><th>Séries</th><th>Reps</th><th>Peso</th></tr></thead><tbody>${l.ex.map(e=>`<tr><td>${esc(e.name)}</td><td>${esc(e.sets)}</td><td>${esc(e.reps)}</td><td>${e.kg?esc(e.kg)+' kg':'—'}</td></tr>`).join('')}</tbody></table></div>`;
+  $('#ldlg').showModal();
+}
+/* assistente: criar, editar e recomeçar o treino */
+function wzNew(mode){
+  const old=S.trn;
+  wz={mode,step:0,n:mode==='edit'&&old?old.n:3,days:mode==='edit'&&old?old.days.map(d=>({ex:d.ex.map(e=>({...e}))})):[]};
+  drawWz();if(!$('#wdlg').open)$('#wdlg').showModal();
+}
+function wzEnsure(){
+  while(wz.days.length<wz.n)wz.days.push({ex:[]});
+  wz.days.length=wz.n;
+  wz.days.forEach(d=>{if(!d.ex.length)d.ex.push({name:'',sets:'',reps:''})});
+}
+function drawWz(){
+  const el=$('#wBody'),T={new:'Criar treino',edit:'Editar treino',restart:'Recomeçar treino'}[wz.mode];
+  if(wz.step===0){
+    el.innerHTML=`<h2>${T}</h2><p class="sub">${wz.mode==='restart'?'Começando do zero. O seu histórico em Dados continua guardado. ':''}Em quantos dias diferentes você divide o treino?</p><div class="wdiv">${[1,2,3,4,5,6,7].map(n=>`<button type="button" class="btn${n===wz.n?' primary':''}" data-wn="${n}">${wLabel(n)}</button>`).join('')}</div><div class="actions"><button type="button" class="btn" id="wCancel">Cancelar</button><button type="button" class="btn primary" id="wNext">Próximo</button></div>`;
+    return;
+  }
+  wzEnsure();const d=wz.days[wz.step-1],last=wz.step===wz.n;
+  el.innerHTML=`<h2>Treino ${LET[wz.step-1]}</h2><p class="sub">${T} · passo ${wz.step} de ${wz.n}</p><div class="wrows">${d.ex.map((e,i)=>`<div class="wrow"><input type="text" data-wi="${i}" data-wf="name" value="${esc(e.name||'')}" placeholder="Exercício" maxlength="60"><input type="text" data-wi="${i}" data-wf="sets" value="${esc(e.sets||'')}" placeholder="Séries" inputmode="numeric" maxlength="4"><input type="text" data-wi="${i}" data-wf="reps" value="${esc(e.reps||'')}" placeholder="Reps" maxlength="10"><button type="button" class="btn icon" data-wdel="${i}" aria-label="Remover exercício">×</button></div>`).join('')}</div><button type="button" class="btn" id="wAdd">+ Adicionar exercício</button><p class="err" id="wErr" role="alert"></p><div class="actions"><button type="button" class="btn" id="wBack">Voltar</button><button type="button" class="btn primary" id="wNext">${last?'Concluir':'Próximo'}</button></div>`;
+}
+function wzSave(){
+  S.trn={n:wz.n,days:wz.days.map(d=>({ex:d.ex.map(e=>({id:e.id||uid(),name:e.name.trim(),sets:(e.sets||'').trim(),reps:(e.reps||'').trim(),kg:e.kg||'',done:false}))}))};
+  S.trnRun=null;TOPEN=null;save();$('#wdlg').close();
+}
+$('#wdlg').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b||!wz)return;
+  if(b.dataset.wn){wz.n=+b.dataset.wn;return drawWz()}
+  if(b.dataset.wdel!==undefined){const d=wz.days[wz.step-1];d.ex.splice(+b.dataset.wdel,1);return drawWz()}
+  if(b.id==='wCancel')return $('#wdlg').close();
+  if(b.id==='wBack'){wz.step--;return drawWz()}
+  if(b.id==='wAdd'){wz.days[wz.step-1].ex.push({name:'',sets:'',reps:''});drawWz();const i=$$('#wBody [data-wf=name]').pop();if(i)i.focus();return}
+  if(b.id==='wNext'){
+    if(wz.step===0){wzEnsure();wz.step=1;return drawWz()}
+    const d=wz.days[wz.step-1];
+    if(!d.ex.some(x=>(x.name||'').trim())){$('#wErr').textContent='Adicione ao menos um exercício com nome.';return}
+    d.ex=d.ex.filter(x=>(x.name||'').trim());
+    if(wz.step===wz.n)return wzSave();
+    wz.step++;drawWz();
+  }
+});
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset.wi===undefined||!wz)return;wz.days[wz.step-1].ex[+el.dataset.wi][el.dataset.wf]=el.value});
+$('#wdlg').addEventListener('close',()=>{wz=null;render()});
 function renderPerfil(){
   const p=PROF||{};
   $('#p-perfil').innerHTML=`<h1>Perfil</h1><section class="card" style="max-width:480px"><div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><label class="ph" title="Trocar foto"><span class="pv" style="${p.avatar?`background:center/cover url(${p.avatar});border-style:solid`:''}">${p.avatar?'':'+'}</span><input type="file" id="pPhoto" accept="image/*" hidden></label><div><b style="font-size:18px">${esc(p.name||'')}</b><div class="sub" style="margin:0">@${esc(p.username||'')} · ${esc(p.email||'')}</div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-cats>Gerenciar categorias</button><button class="btn" id="logout">Sair</button></div></section>`;
@@ -1326,7 +1465,7 @@ function renderDados(){
   h+=`<section class="card dcard"><div class="ct"><h2>Horas por categoria</h2><span class="sub" style="margin:0">${tot?fmt(tot)+' · ':''}${L.length} ${L.length===1?'tarefa concluída':'tarefas concluídas'}</span></div>`
     +(tot?pieHtml(en,tot):'<div class="empty">Nenhum tempo registrado neste período.<br>Conclua uma tarefa para ver os dados aqui.</div>')+'</section>';
   if(tot&&dView!=='day')h+=dayChart(a,b,days);
-  $('#dBody').innerHTML=h;
+  $('#dBody').innerHTML=h+trnLogHtml();
 }
 
 /* navegação */
@@ -1370,6 +1509,15 @@ document.addEventListener('click',e=>{
   if(q('#fAdd'))return openFin(null);
   if(x=q('tr[data-fe]')){const f=S.fin.find(y=>y.id===x.dataset.fe);if(f)openFin(f);return}
   if(x=q('[data-hd]')){const[id,k]=x.dataset.hd.split('|'),l=S.hlog[k]=S.hlog[k]||{};if(l[id])delete l[id];else l[id]=true;if(!Object.keys(l).length)delete S.hlog[k];save();return renderDados()}
+  if(x=q('[data-topen]')){TOPEN=TOPEN===x.dataset.topen?null:x.dataset.topen;return renderTrn()}
+  if((x=q('li.tkrow[data-to]'))&&!q('button,input')){TOPEN=TOPEN===x.dataset.to?null:x.dataset.to;return renderTrn()}
+  if(x=q('[data-tg]'))return trnAct(x.dataset.tg);
+  if(x=q('[data-tck]')){const[L,id]=x.dataset.tck.split('|'),d=S.trn.days[LET.indexOf(L)],e=d.ex.find(y=>y.id===id);e.done=!e.done;save();return d.ex.every(y=>y.done)?finishTrn(L):renderTrn()}
+  if(q('#tEdit'))return wzNew('edit');
+  if(q('#tRestart'))return wzNew('restart');
+  if(q('#tNew'))return wzNew('new');
+  if(x=q('tr[data-tl]'))return openTl(x.dataset.tl);
+  if(q('#lClose')){$('#ldlg').close();return}
   if(x=q('.tab')){tab=x.dataset.tab;return render()}
   if(x=q('[data-go]')){tab=x.dataset.go;return render()}
   if(x=q('[data-pv]')){pView=x.dataset.pv;return render()}
