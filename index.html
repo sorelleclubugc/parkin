@@ -201,10 +201,11 @@ textarea{display:block;width:100%;padding:9px 10px;border:1px solid var(--line);
 .tw tr.alert:hover{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .stp{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600}
 .muted{color:var(--muted)}
-.tc.post{padding:5px 10px;gap:8px;background:color-mix(in srgb,var(--c) 26%,var(--surface));border:1px solid var(--c);border-radius:10px}
-.tc.post .main b{font-size:14px}
-.tc.post .ck{width:18px;height:18px}
-.tc.post .ck.on::after{left:5px;top:1px;width:4px;height:8px}
+.tc.post{padding:3px 10px;gap:8px;background:color-mix(in srgb,var(--c) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 35%,var(--line));border-radius:8px}
+.tc.post .main b{font-size:13px;font-weight:400}
+.tc.post .meta{font-size:12px}
+.tc.post .ck{width:16px;height:16px}
+.tc.post .ck.on::after{left:4px;top:0;width:4px;height:8px}
 th.srt{cursor:pointer;user-select:none;white-space:nowrap}
 th.srt:hover{color:var(--ink)}
 .wkb{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
@@ -588,7 +589,7 @@ const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 let S={cats:[{id:'c1',name:'Trabalho',color:PAL[0]},{id:'c2',name:'Estudo',color:PAL[4]},{id:'c3',name:'Casa',color:PAL[2]},{id:'c4',name:'Saúde',color:PAL[1]}],tasks:[],theme:null};
 const S0=JSON.stringify(S);
 let KEY='parkin:v2';
-const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];S.fin=S.fin||[];S.fcats=S.fcats||{in:['Canvas UGC','Afiliados','UGC Comum','Influencer','Outros'],out:['Moradia','Alimentação','Transporte','Assinaturas','Impostos','Outros']};S.goals=S.goals||{};S.recs=S.recs||[];S.trn=S.trn||null;S.trnLog=S.trnLog||[];S.trnWeek=S.trnWeek||['','','','','','',''];S.trnRun=S.trnRun||null;migrateArch();fixIds();backfillL();fillRecs()};norm();
+const norm=()=>{fixIds();if(!Array.isArray(S.habits))S.habits=[{id:uid(),name:'Beber água'},{id:uid(),name:'Exercício'}];S.hlog=S.hlog||{};S.comum=S.comum||[];S.cseq=S.cseq||0;[S.comum,S.infl||[]].forEach(A=>A.forEach(v=>{if(!v.head&&v.marca)v.head=v.marca;if(v.head===undefined)v.head=''}));S.brands=S.brands||[];S.brands.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.afil=S.afil||[];S.afil.forEach(b=>{b.vids=b.vids||[];b.seq=b.seq||0;b.gen=b.gen||{}});S.infl=S.infl||[];S.iseq=S.iseq||0;S.cats.forEach(c=>{if(c.name==='UGC')c.name='Canvas UGC'});S.arch=S.arch||[];S.fin=S.fin||[];S.fcats=S.fcats||{in:['Canvas UGC','Afiliados','UGC Comum','Influencer','Outros'],out:['Moradia','Alimentação','Transporte','Assinaturas','Impostos','Outros']};S.goals=S.goals||{};S.recs=S.recs||[];if(!S.pdur10){S.tasks.forEach(t=>{if(!t.done&&/^(vid|lst):/.test(t.src||'')&&t.dur===30)t.dur=10});S.pdur10=true}S.trn=S.trn||null;S.trnLog=S.trnLog||[];S.trnWeek=S.trnWeek||['','','','','','',''];S.trnRun=S.trnRun||null;migrateArch();fixIds();backfillL();fillRecs()};norm();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}queueSync()};
 const cat=id=>S.cats.find(c=>c.id===id)||{name:'Sem categoria',color:'#8A93A8'};
 const byId=id=>S.tasks.find(t=>t.id===id);
@@ -829,7 +830,7 @@ function syncPostTask(o,v){
   const L=typeof o==='string',src=L?'lst:'+o+':'+v.id:'vid:'+o.id+':'+v.id,nm=`Postar #${v.id} ${L?(o==='infl'?'Influencer':'UGC Comum'):o.name}`,t=S.tasks.find(x=>x.src===src);
   if(!v.sched){if(t&&!t.done)S.tasks=S.tasks.filter(x=>x!==t)}
   else if(t){if(!t.done){t.date=v.sched;t.name=nm}}
-  else S.tasks.push({id:uid(),name:nm,cat:L?catNamed(o==='infl'?'Influencer':'UGC Comum',o==='infl'?'#7B4FD6':'#D98A06'):ugcCat(),date:v.sched,time:'',dur:30,done:false,spent:0,doneDate:'',src});
+  else S.tasks.push({id:uid(),name:nm,cat:L?catNamed(o==='infl'?'Influencer':'UGC Comum',o==='infl'?'#7B4FD6':'#D98A06'):ugcCat(),date:v.sched,time:'',dur:10,done:false,spent:0,doneDate:'',src});
   taskFromVid(o,v);
   save();
 }
